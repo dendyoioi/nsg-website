@@ -128,14 +128,14 @@ Gelap hanya di "panggung": **hero, strip K3, footer**. Seluruh konten tengah ter
 Urutan + pemetaan konten dari `NSG COMPRO.docx`:
 
 1. **Header** — sticky; transparan di atas hero → glass saat scroll; nav anchor + tombol Kontak + toggle ID/EN.
-2. **Hero (gelap)** — gradient teal + radial glow mint; eyebrow "Satu Mitra — Tiga Solusi"; H1 tagline *"Building Strong Foundations, Delivering Sustainable Synergy."* (gradient text di kata kunci); subjudul ringkas 3 bidang; CTA "Jelajahi Divisi" + "Hubungi Kami"; kartu glass statistik (3 Divisi, 14+ Sektor); gambar pendukung sisi kanan.
-3. **Tentang (terang)** — 2 paragraf "Tentang Perusahaan"; 5 nilai perusahaan sebagai chips; kartu **Visi** (gradient gelap) + **Misi** (kartu putih, 5 poin).
+2. **Hero (gelap)** — gradient teal + radial glow mint; eyebrow "Satu Mitra — Tiga Solusi"; H1 tagline *"Building Strong Foundations, Delivering Sustainable Synergy."* (gradient text di kata kunci); subjudul ringkas 3 bidang; CTA "Jelajahi Divisi" + "Hubungi Kami"; kartu glass statistik (3 Divisi, 13+ Sektor, K3); gambar pendukung sisi kanan.
+3. **Tentang (terang)** — 3 paragraf "Tentang Perusahaan"; 5 nilai perusahaan sebagai chips; kartu **Visi** (gradient gelap) + **Misi** (kartu putih, 5 poin).
 4. **Divisi (terang)** — 3 kartu bernomor (ikon + nama + deskripsi + ringkasan 10 lingkup/produk per divisi):
    - 01 Konstruksi Konvensional Gedung Perkantoran
    - 02 Perdagangan Besar Bahan Konstruksi dari Logam
    - 03 Perdagangan Besar Suku Cadang Elektronik
 5. **Keunggulan (terang)** — grid 8 keunggulan (kartu kecil + ikon ✓); strip gelap **K3, Mutu & Kepatuhan** (4 poin) + paragraf "Komitmen Kami".
-6. **Target Pelanggan (terang)** — barisan pil 14 sektor, center-aligned.
+6. **Target Pelanggan (terang)** — barisan pil 13 sektor, center-aligned.
 7. **Kontak (terang)** — dua kolom:
    - Kiri: form Web3Forms (nama, email, perusahaan/institusi opsional, kategori kebutuhan dropdown [3 divisi + Lainnya], pesan) + honeypot.
    - Kanan: kartu info kontak — alamat singkat, email, telepon (diisi dari `content/site.ts`). **Tanpa Google Maps** (keputusan revisi: alamat penuh dipindah ke footer).
@@ -184,7 +184,7 @@ Urutan + pemetaan konten dari `NSG COMPRO.docx`:
 - **Paritas konten ID/EN** — dijamin `interface Content` (error build bila field hilang).
 - **Unit test (vitest)** — integritas konten terhadap dokumen sumber:
   - 3 divisi, masing-masing 10 item lingkup/produk
-  - 5 misi, 5 nilai perusahaan, 8 keunggulan, 4 poin K3, 14 sektor
+  - 5 misi, 5 nilai perusahaan, 8 keunggulan, 4 poin K3, 13 sektor
   - semua field teks non-kosong di kedua bahasa
 - **Build sukses** = verifikasi static export.
 - **Smoke test manual** (`npx serve out`): semua anchor berfungsi, toggle bahasa mempertahankan section, form lengkap (idle/mengirim/sukses/gagal), tampilan mobile (Chrome DevTools), tidak ada console error.
