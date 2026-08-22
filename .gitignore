@@ -1,0 +1,19 @@
+# Rahasia — tidak pernah di-track
+Administration/
+
+# Materi referensi client (read-only, tidak di-track)
+Data Dokumen/
+Web Design Reference/
+
+# Sesi brainstorming visual
+.superpowers/
+
+# macOS
+.DS_Store
+
+# Node / Next.js (website)
+website/node_modules/
+website/.next/
+website/out/
+website/.env
+website/.env*.local
