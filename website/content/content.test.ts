@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { contentEn } from "./en";
 import { contentId } from "./id";
 import type { Content } from "./types";
 
@@ -41,5 +42,23 @@ describe("konten Indonesia (sumber: NSG COMPRO.docx)", () => {
 
   it("semua field teks terisi (non-kosong)", () => {
     assertAllStringsNonEmpty(contentId satisfies Content);
+  });
+});
+
+describe("konten English (terjemahan)", () => {
+  it("struktur sama dengan dokumen sumber", () => {
+    expect(contentEn.divisions.items).toHaveLength(3);
+    for (const d of contentEn.divisions.items) expect(d.items).toHaveLength(10);
+    expect(contentEn.about.paragraphs).toHaveLength(3);
+    expect(contentEn.about.missions).toHaveLength(5);
+    expect(contentEn.about.values).toHaveLength(5);
+    expect(contentEn.advantages.items).toHaveLength(8);
+    expect(contentEn.advantages.compliance.items).toHaveLength(4);
+    expect(contentEn.advantages.compliance.commitment).toHaveLength(2);
+    expect(contentEn.sectors.items).toHaveLength(13);
+  });
+
+  it("semua field teks terisi (non-kosong)", () => {
+    assertAllStringsNonEmpty(contentEn);
   });
 });

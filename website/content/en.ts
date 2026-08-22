@@ -1,0 +1,225 @@
+import type { Content } from "./types";
+
+export const contentEn: Content = {
+  meta: {
+    title: "PT Nattu Global Synergy — Construction, Metal Trading & Electronic Spare Parts",
+    description:
+      "PT Nattu Global Synergy is a trusted partner for office building construction, metal construction material trading, and electronic spare parts procurement in Jakarta — serving government, state-owned, and private sectors.",
+  },
+  nav: {
+    about: "About Us",
+    divisions: "Business Divisions",
+    advantages: "Why Choose Us",
+    contact: "Contact",
+    contactCta: "Contact Us",
+  },
+  hero: {
+    eyebrow: "One Partner — Three Solutions",
+    titlePre: "Building Strong Foundations, Delivering ",
+    titleHighlight: "Sustainable Synergy",
+    titlePost: ".",
+    subtitle:
+      "Office building construction, metal construction material trading, and electronic spare parts procurement — integrated solutions for the government, state-owned, and private sectors.",
+    ctaPrimary: "Explore Our Divisions",
+    ctaSecondary: "Contact Us",
+    imageAlt: "Multi-storey building construction structure",
+    stats: [
+      { value: "3", label: "Core Divisions" },
+      { value: "13+", label: "Customer Sectors" },
+      { value: "K3", label: "Safety Commitment" },
+    ],
+  },
+  about: {
+    eyebrow: "About Us",
+    heading: "A trusted partner in construction & trading",
+    paragraphs: [
+      "PT NATTU GLOBAL SYNERGY is a construction and trading company committed to delivering integrated solutions for the development, industrial, commercial, and government sectors.",
+      "By upholding professionalism, quality, and integrity, PT NATTU GLOBAL SYNERGY serves as a business partner capable of providing construction services and procuring industrial materials and components effectively, efficiently, and on time.",
+      "We believe that a project's success is built on strong synergy between work quality, precise execution, and sustainable cooperation with every customer and business partner.",
+    ],
+    valuesLabel: "Corporate Values",
+    values: [
+      {
+        name: "Integrity",
+        description:
+          "Carrying out every task with honesty, responsibility, and high business ethics.",
+      },
+      {
+        name: "Professionalism",
+        description:
+          "Prioritizing competence, service quality, and professional work standards.",
+      },
+      {
+        name: "Commitment",
+        description:
+          "Committed to delivering the best results according to customer needs.",
+      },
+      {
+        name: "Collaboration",
+        description:
+          "Building mutually beneficial cooperation with all business partners.",
+      },
+      {
+        name: "Continuous Improvement",
+        description:
+          "Continuously improving service quality through evaluation, innovation, and sustainable development.",
+      },
+    ],
+    visionLabel: "Vision",
+    vision:
+      "To become a trusted, professional national construction and trading company that delivers the best solutions through service quality, innovation, and sustainable synergy.",
+    missionLabel: "Mission",
+    missions: [
+      "Deliver construction services that prioritize quality, safety, and timeliness.",
+      "Provide quality products and materials tailored to customer needs.",
+      "Build professional, transparent, and mutually beneficial business relationships.",
+      "Develop competent and high-integrity human resources.",
+      "Deliver added value through responsive, customer-satisfaction-oriented service.",
+    ],
+  },
+  divisions: {
+    eyebrow: "Business Divisions",
+    heading: "Three divisions, one synergy",
+    lead: "We combine construction expertise and procurement networks to meet your project needs end to end.",
+    items: [
+      {
+        number: "01",
+        icon: "building",
+        name: "Conventional Office Building Construction",
+        intro:
+          "We deliver office building construction with a professional, systematic approach — attending to quality standards, cost efficiency, occupational safety, and on-time completion.",
+        items: [
+          "Office building construction",
+          "Building renovation & rehabilitation",
+          "Structural works",
+          "Architectural works",
+          "Interior works",
+          "Mechanical works",
+          "Electrical works",
+          "Plumbing works",
+          "Building finishing",
+          "Building maintenance",
+        ],
+      },
+      {
+        number: "02",
+        icon: "layers",
+        name: "Wholesale of Metal Construction Materials",
+        intro:
+          "We supply metal construction materials for development and industrial projects — prioritizing product quality, specification accuracy, and distribution efficiency.",
+        items: [
+          "Structural steel",
+          "Construction iron",
+          "Hollow sections",
+          "Steel pipes",
+          "Steel plates",
+          "Wire mesh",
+          "Stainless steel",
+          "Aluminium",
+          "Metal construction accessories",
+          "Other supporting construction materials",
+        ],
+      },
+      {
+        number: "03",
+        icon: "cpu",
+        name: "Wholesale of Electronic Spare Parts",
+        intro:
+          "We procure electronic spare parts for industrial, commercial, and project needs — through a fast and reliable procurement process.",
+        items: [
+          "Electronic components",
+          "Electronic spare parts",
+          "Electrical equipment",
+          "Electrical panels & accessories",
+          "Cables",
+          "Connectors",
+          "Sensors",
+          "Relays",
+          "Switches",
+          "Other supporting electronic system components",
+        ],
+      },
+    ],
+  },
+  advantages: {
+    eyebrow: "Why Choose Us",
+    heading: "Our strengths & commitments",
+    items: [
+      "Customer satisfaction oriented",
+      "Professional and responsive service",
+      "Commitment to work quality",
+      "Products supplied to specification",
+      "Effective and efficient completion of works",
+      "On-time delivery as a priority",
+      "Upholding integrity and transparency",
+      "Flexible to customers' project needs",
+    ],
+    compliance: {
+      eyebrow: "Safety, Quality & Compliance",
+      heading: "Safety, quality, and compliance in every work",
+      items: [
+        "Prioritizing occupational safety in every operational activity.",
+        "Maintaining work and product quality according to agreed specifications.",
+        "Applying professional corporate governance.",
+        "Complying with all applicable laws and regulations.",
+      ],
+      commitmentHeading: "Our Commitment",
+      commitment: [
+        "We understand that every project has its own challenges and requirements. PT NATTU GLOBAL SYNERGY is therefore committed to being a partner that delivers the best solutions through thorough planning, professional execution, and consistent service.",
+        "Customer trust is the company's greatest asset. With a spirit of collaboration and continuous improvement, we are ready to support construction and procurement needs for the private, state-owned, and government sectors.",
+      ],
+    },
+  },
+  sectors: {
+    eyebrow: "Who We Serve",
+    heading: "From government agencies to industry",
+    items: [
+      "Government Agencies",
+      "Ministries",
+      "State-Owned Enterprises (BUMN)",
+      "Regional-Owned Enterprises (BUMD)",
+      "Private Companies",
+      "Contractors",
+      "Developers",
+      "Manufacturing Industry",
+      "Trading Companies",
+      "Office Facilities",
+      "Educational Institutions",
+      "Hospitals",
+      "Commercial Facilities",
+    ],
+  },
+  contact: {
+    eyebrow: "Get in Touch",
+    heading: "Let's discuss your project needs",
+    lead: "Send us a message using the form below, or reach us directly by email.",
+    form: {
+      nameLabel: "Full Name",
+      namePlaceholder: "Your name",
+      emailLabel: "Email",
+      companyLabel: "Company / Institution (optional)",
+      companyPlaceholder: "Your company or institution",
+      categoryLabel: "Inquiry Category",
+      categoryOther: "Others",
+      messageLabel: "Message",
+      messagePlaceholder: "Tell us about your project or procurement needs…",
+      submitLabel: "Send Message",
+      sendingLabel: "Sending…",
+      successMessage:
+        "Thank you! Your message has been sent. We will get back to you shortly.",
+      errorMessage:
+        "Sorry, the message failed to send. Please try again or contact us by email.",
+      unconfiguredMessage:
+        "The form is not configured yet (Web3Forms access key missing).",
+      emailSubject: "New message from the NSG website",
+    },
+    infoTitle: "Contact Information",
+    addressLabel: "Address",
+    emailLabel: "Email",
+  },
+  footer: {
+    navTitle: "Navigation",
+    contactTitle: "Contact",
+    copyright: "© 2026 PT Nattu Global Synergy. All rights reserved.",
+  },
+};
