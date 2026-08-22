@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { inter, sora } from "@/lib/fonts";
+import "@/app/globals.css";
 
 export function HtmlShell({
   lang,
