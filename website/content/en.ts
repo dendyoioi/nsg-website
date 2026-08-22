@@ -85,9 +85,10 @@ export const contentEn: Content = {
       {
         number: "01",
         icon: "building",
+        image: "/images/division_1_construction.png",
         name: "Conventional Office Building Construction",
         intro:
-          "We deliver office building construction with a professional, systematic approach — attending to quality standards, cost efficiency, occupational safety, and on-time completion.",
+          "New office building construction, structural steel & concrete, architectural interior finishing, and MEP installation with strict quality control.",
         items: [
           "Office building construction",
           "Building renovation & rehabilitation",
@@ -104,9 +105,10 @@ export const contentEn: Content = {
       {
         number: "02",
         icon: "layers",
+        image: "/images/division_2_metal.png",
         name: "Wholesale of Metal Construction Materials",
         intro:
-          "We supply metal construction materials for development and industrial projects — prioritizing product quality, specification accuracy, and distribution efficiency.",
+          "Supplier & distributor of high-specification structural metal materials for general contractors, infrastructure projects, and industrial fabricators.",
         items: [
           "Structural steel",
           "Construction iron",
@@ -123,9 +125,10 @@ export const contentEn: Content = {
       {
         number: "03",
         icon: "cpu",
+        image: "/images/division_3_electronic.png",
         name: "Wholesale of Electronic Spare Parts",
         intro:
-          "We procure electronic spare parts for industrial, commercial, and project needs — through a fast and reliable procurement process.",
+          "Procurement of precision electrical components, industrial control panels, sensors, and electrical spare parts for buildings and automation systems.",
         items: [
           "Electronic components",
           "Electronic spare parts",

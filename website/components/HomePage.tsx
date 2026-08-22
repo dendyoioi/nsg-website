@@ -2,10 +2,8 @@ import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { About } from "@/components/sections/About";
 import { Advantages } from "@/components/sections/Advantages";
-import { Contact } from "@/components/sections/Contact";
 import { Divisions } from "@/components/sections/Divisions";
 import { Hero } from "@/components/sections/Hero";
-import { Sectors } from "@/components/sections/Sectors";
 import { getContent } from "@/content";
 import type { Locale } from "@/content/types";
 
@@ -19,8 +17,6 @@ export function HomePage({ locale }: { locale: Locale }) {
         <About t={t} />
         <Divisions t={t} />
         <Advantages t={t} />
-        <Sectors t={t} />
-        <Contact t={t} />
       </main>
       <Footer t={t} />
     </>

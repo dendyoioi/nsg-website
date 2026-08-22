@@ -85,9 +85,10 @@ export const contentId: Content = {
       {
         number: "01",
         icon: "building",
+        image: "/images/division_1_construction.png",
         name: "Konstruksi Konvensional Gedung Perkantoran",
         intro:
-          "Kami melayani pekerjaan konstruksi gedung perkantoran dengan pendekatan profesional dan sistematis — memperhatikan standar mutu, efisiensi biaya, keselamatan kerja, serta ketepatan waktu penyelesaian.",
+          "Pembangunan gedung baru, renovasi total/parsial, struktur beton/baja, arsitektur interior, dan instalasi Mekanikal, Elektrikal, & Plumbing (MEP) berstandar mutu tinggi.",
         items: [
           "Pembangunan gedung perkantoran",
           "Renovasi dan rehabilitasi bangunan",
@@ -104,9 +105,10 @@ export const contentId: Content = {
       {
         number: "02",
         icon: "layers",
+        image: "/images/division_2_metal.png",
         name: "Perdagangan Besar Bahan Konstruksi dari Logam",
         intro:
-          "Kami menyediakan berbagai kebutuhan material konstruksi berbahan logam untuk mendukung proyek pembangunan dan industri — mengutamakan kualitas produk, ketepatan spesifikasi, dan efisiensi distribusi.",
+          "Penyedia & distributor bahan konstruksi logam presisi berkualitas tinggi untuk kontraktor, proyek infrastruktur, dan pabrikasi industri.",
         items: [
           "Baja struktural",
           "Besi konstruksi",
@@ -123,9 +125,10 @@ export const contentId: Content = {
       {
         number: "03",
         icon: "cpu",
+        image: "/images/division_3_electronic.png",
         name: "Perdagangan Besar Suku Cadang Elektronik",
         intro:
-          "Kami melayani pengadaan berbagai suku cadang elektronik untuk kebutuhan industri, komersial, maupun proyek — dengan proses pengadaan yang cepat dan terpercaya.",
+          "Pengadaan suku cadang, komponen elektronik presisi, dan perangkat kelistrikan untuk panel industri, otomasi, gedung, dan instansi.",
         items: [
           "Komponen elektronik",
           "Spare part elektronik",
