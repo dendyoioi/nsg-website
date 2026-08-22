@@ -1,9 +1,9 @@
 import { Mail, MapPin } from "lucide-react";
 import { LogoMark } from "@/components/LogoMark";
 import { site } from "@/content/site";
-import type { Content, Locale } from "@/content/types";
+import type { Content } from "@/content/types";
 
-export function Footer({ locale: _locale, t }: { locale: Locale; t: Content }) {
+export function Footer({ t }: { t: Content }) {
   const links = [
     { href: `#${site.anchors.about}`, label: t.nav.about },
     { href: `#${site.anchors.divisions}`, label: t.nav.divisions },
