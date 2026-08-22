@@ -31,11 +31,11 @@ export const contentId: Content = {
   },
   about: {
     eyebrow: "Tentang Kami",
-    heading: "Mitra konstruksi & perdagangan yang terpercaya",
+    heading: "Mitra Strategis Konstruksi & Perdagangan Industri",
     paragraphs: [
-      "PT NATTU GLOBAL SYNERGY adalah perusahaan yang bergerak di bidang konstruksi dan perdagangan yang berkomitmen memberikan solusi terpadu bagi kebutuhan sektor pembangunan, industri, komersial, maupun pemerintahan.",
-      "Dengan mengedepankan profesionalisme, kualitas, dan integritas, PT NATTU GLOBAL SYNERGY hadir sebagai mitra bisnis yang mampu menyediakan layanan konstruksi serta pengadaan berbagai kebutuhan material dan komponen industri secara efektif, efisien, dan tepat waktu.",
-      "Kami percaya bahwa keberhasilan sebuah proyek dibangun melalui sinergi yang kuat antara kualitas pekerjaan, ketepatan pelaksanaan, dan hubungan kerja sama yang berkelanjutan dengan setiap pelanggan maupun mitra usaha.",
+      "Penyedia solusi terpadu dalam bidang konstruksi bangunan dan rantai pasok material industri untuk sektor komersial, manufaktur, BUMN, hingga instansi pemerintahan.",
+      "Mengintegrasikan keahlian teknis konstruksi konvensional dengan jaringan pasokan bahan logam dan suku cadang elektronik presisi secara efektif, efisien, dan tepat waktu.",
+      "Membangun keberhasilan proyek melalui standar mutu tinggi, disiplin jadwal kerja, serta kemitraan yang berkelanjutan.",
     ],
     valuesLabel: "Nilai-Nilai Perusahaan",
     values: [
@@ -65,10 +65,10 @@ export const contentId: Content = {
           "Terus meningkatkan kualitas layanan melalui evaluasi, inovasi, dan pengembangan berkelanjutan.",
       },
     ],
-    visionLabel: "Visi",
+    visionLabel: "Visi Perusahaan",
     vision:
       "Menjadi perusahaan konstruksi dan perdagangan nasional yang terpercaya, profesional, serta memberikan solusi terbaik melalui kualitas layanan, inovasi, dan sinergi yang berkelanjutan.",
-    missionLabel: "Misi",
+    missionLabel: "Misi Perusahaan",
     missions: [
       "Memberikan layanan konstruksi yang mengutamakan kualitas, keselamatan, dan ketepatan waktu.",
       "Menyediakan produk dan material berkualitas sesuai kebutuhan pelanggan.",
@@ -79,8 +79,8 @@ export const contentId: Content = {
   },
   divisions: {
     eyebrow: "Bidang Usaha",
-    heading: "Tiga divisi, satu sinergi",
-    lead: "Kami menggabungkan keahlian konstruksi dan jaringan pengadaan untuk memenuhi kebutuhan proyek Anda secara menyeluruh.",
+    heading: "Sinergi Tiga Pilar Bisnis Strategis",
+    lead: "Integrasi keahlian teknis konstruksi bangunan dan jaringan pasokan material industri untuk kepastian mutu serta efisiensi proyek.",
     items: [
       {
         number: "01",

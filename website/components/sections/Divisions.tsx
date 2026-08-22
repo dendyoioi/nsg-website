@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ArrowRight, Building2, Check, Cpu, Layers } from "lucide-react";
+import { Building2, Check, Cpu, Layers } from "lucide-react";
 import { Reveal } from "@/components/ui/Reveal";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { site } from "@/content/site";
@@ -33,10 +33,10 @@ export function Divisions({ t }: { t: Content }) {
               <Reveal
                 key={d.number}
                 delay={i * 0.1}
-                className="group flex flex-col overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-md transition-all duration-300 hover:-translate-y-1.5 hover:border-brand-400 hover:shadow-xl"
+                className="group flex h-full flex-col overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-md transition-all duration-300 hover:-translate-y-1.5 hover:border-brand-400 hover:shadow-xl"
               >
                 {/* Image Cover with Division Badge */}
-                <div className="relative h-52 w-full overflow-hidden bg-slate-100">
+                <div className="relative h-56 w-full overflow-hidden bg-slate-100 shrink-0">
                   <Image
                     src={d.image}
                     alt={d.name}
@@ -44,25 +44,27 @@ export function Divisions({ t }: { t: Content }) {
                     height={360}
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-brand-950/80 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-brand-950/85 via-brand-950/20 to-transparent" />
                   <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-3.5 py-1 text-xs font-extrabold tracking-wide text-brand-950 shadow-md">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-400 px-3.5 py-1 text-xs font-extrabold tracking-wide text-brand-950 shadow-md">
                       DIVISI {d.number}
                     </span>
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/90 text-brand-700 shadow-sm backdrop-blur-sm">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/95 text-brand-700 shadow-sm backdrop-blur-sm">
                       <Icon className="h-5 w-5" />
                     </div>
                   </div>
                 </div>
 
-                {/* Content Body */}
-                <div className="flex flex-1 flex-col p-7">
-                  <h3 className="font-display text-lg font-bold leading-snug text-ink sm:text-xl">
-                    {d.name}
-                  </h3>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-600">
-                    {d.intro}
-                  </p>
+                {/* Content Body with Equal Height Layout */}
+                <div className="flex flex-1 flex-col justify-between p-7">
+                  <div>
+                    <h3 className="font-display text-lg font-bold leading-snug text-ink sm:text-xl min-h-[56px] flex items-center">
+                      {d.name}
+                    </h3>
+                    <p className="mt-3 text-sm leading-relaxed text-slate-600 min-h-[64px]">
+                      {d.intro}
+                    </p>
+                  </div>
 
                   <div className="mt-6 border-t border-slate-100 pt-5">
                     <div className="mb-3 text-[11px] font-bold uppercase tracking-wider text-brand-700">
@@ -79,17 +81,6 @@ export function Divisions({ t }: { t: Content }) {
                         </li>
                       ))}
                     </ul>
-                  </div>
-
-                  {/* Card Action */}
-                  <div className="mt-8 border-t border-slate-100 pt-5">
-                    <a
-                      href={`#${site.anchors.contact}`}
-                      className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-brand-700 transition-colors hover:text-brand-500"
-                    >
-                      <span>Konsultasi Divisi Ini</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </a>
                   </div>
                 </div>
               </Reveal>

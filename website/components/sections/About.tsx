@@ -19,19 +19,22 @@ export function About({ t }: { t: Content }) {
   return (
     <section id={site.anchors.about} className="bg-paper-alt py-24 sm:py-32">
       <div className="mx-auto max-w-6xl px-6">
-        {/* Header & Concise Intro */}
+        {/* Header & Highlighted Core Definition */}
         <Reveal className="mx-auto max-w-3xl text-center">
           <SectionHeading
             eyebrow={t.about.eyebrow}
             title={t.about.heading}
             align="center"
           />
-          <p className="mt-5 text-base sm:text-lg leading-relaxed text-slate-600 font-normal">
-            {t.about.paragraphs[0]}
-          </p>
-          <p className="mt-3 text-sm sm:text-base leading-relaxed text-slate-500">
-            {t.about.paragraphs[1]}
-          </p>
+
+          <div className="mt-8 rounded-2xl border border-brand-200/80 bg-gradient-to-r from-brand-50 via-white to-brand-50 p-6 sm:p-8 shadow-sm">
+            <p className="text-base sm:text-xl font-semibold leading-relaxed text-slate-800">
+              {t.about.paragraphs[0]}
+            </p>
+            <p className="mt-4 text-sm sm:text-base leading-relaxed text-slate-600">
+              {t.about.paragraphs[1]}
+            </p>
+          </div>
         </Reveal>
 
         {/* Vision & Mission Cards */}
@@ -104,7 +107,7 @@ export function About({ t }: { t: Content }) {
               return (
                 <div
                   key={v.name}
-                  className="flex flex-col rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-brand-300 hover:shadow-md"
+                  className="flex h-full flex-col rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-brand-300 hover:shadow-md"
                 >
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
                     <Icon className="h-5 w-5" />

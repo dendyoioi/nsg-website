@@ -31,11 +31,11 @@ export const contentEn: Content = {
   },
   about: {
     eyebrow: "About Us",
-    heading: "A trusted partner in construction & trading",
+    heading: "Strategic Partner in Construction & Industrial Supply",
     paragraphs: [
-      "PT NATTU GLOBAL SYNERGY is a construction and trading company committed to delivering integrated solutions for the development, industrial, commercial, and government sectors.",
-      "By upholding professionalism, quality, and integrity, PT NATTU GLOBAL SYNERGY serves as a business partner capable of providing construction services and procuring industrial materials and components effectively, efficiently, and on time.",
-      "We believe that a project's success is built on strong synergy between work quality, precise execution, and sustainable cooperation with every customer and business partner.",
+      "An integrated enterprise delivering high-standard building construction and industrial supply chain solutions for commercial, manufacturing, state-owned, and public sector clients.",
+      "Combining engineering excellence in conventional construction with a reliable supply network for structural metal materials and precision electronic components.",
+      "Building project success through stringent quality standards, execution discipline, and long-term collaborative partnerships.",
     ],
     valuesLabel: "Corporate Values",
     values: [
@@ -65,10 +65,10 @@ export const contentEn: Content = {
           "Continuously improving service quality through evaluation, innovation, and sustainable development.",
       },
     ],
-    visionLabel: "Vision",
+    visionLabel: "Our Vision",
     vision:
       "To become a trusted, professional national construction and trading company that delivers the best solutions through service quality, innovation, and sustainable synergy.",
-    missionLabel: "Mission",
+    missionLabel: "Our Mission",
     missions: [
       "Deliver construction services that prioritize quality, safety, and timeliness.",
       "Provide quality products and materials tailored to customer needs.",
@@ -79,8 +79,8 @@ export const contentEn: Content = {
   },
   divisions: {
     eyebrow: "Business Divisions",
-    heading: "Three divisions, one synergy",
-    lead: "We combine construction expertise and procurement networks to meet your project needs end to end.",
+    heading: "Synergy Across Three Strategic Pillars",
+    lead: "Combining technical building construction expertise with nationwide industrial supply chains for project certainty and efficiency.",
     items: [
       {
         number: "01",
