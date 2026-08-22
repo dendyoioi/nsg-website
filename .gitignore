@@ -1,19 +1,48 @@
-# Rahasia — tidak pernah di-track
-Administration/
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Materi referensi client (read-only, tidak di-track)
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# local private client & ide folders
+Administration/
 Data Dokumen/
 Web Design Reference/
-
-# Sesi brainstorming visual
+.claude/
 .superpowers/
-
-# macOS
-.DS_Store
-
-# Node / Next.js (website)
-website/node_modules/
-website/.next/
-website/out/
-website/.env
-website/.env*.local
