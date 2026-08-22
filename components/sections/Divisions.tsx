@@ -47,7 +47,7 @@ export function Divisions({ t }: { t: Content }) {
                   <div className="absolute inset-0 bg-gradient-to-t from-brand-950/85 via-brand-950/20 to-transparent" />
                   <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
                     <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-400 px-3.5 py-1 text-xs font-extrabold tracking-wide text-brand-950 shadow-md">
-                      DIVISI {d.number}
+                      {d.badge}
                     </span>
                     <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/95 text-brand-700 shadow-sm backdrop-blur-sm">
                       <Icon className="h-5 w-5" />

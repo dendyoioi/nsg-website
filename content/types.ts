@@ -2,6 +2,7 @@ export type Locale = "id" | "en";
 
 export interface DivisionItem {
   number: string;
+  badge: string;
   icon: "building" | "layers" | "cpu";
   image: string;
   name: string;

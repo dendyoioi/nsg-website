@@ -84,6 +84,7 @@ export const contentId: Content = {
     items: [
       {
         number: "01",
+        badge: "Jasa Konstruksi Gedung",
         icon: "building",
         image: "/images/division_1_construction.png",
         name: "Konstruksi Konvensional Gedung Perkantoran",
@@ -104,6 +105,7 @@ export const contentId: Content = {
       },
       {
         number: "02",
+        badge: "Distribusi Material Logam",
         icon: "layers",
         image: "/images/division_2_metal.png",
         name: "Perdagangan Besar Bahan Konstruksi dari Logam",
@@ -124,6 +126,7 @@ export const contentId: Content = {
       },
       {
         number: "03",
+        badge: "Pengadaan Suku Cadang Elektronik",
         icon: "cpu",
         image: "/images/division_3_electronic.png",
         name: "Perdagangan Besar Suku Cadang Elektronik",

@@ -84,6 +84,7 @@ export const contentEn: Content = {
     items: [
       {
         number: "01",
+        badge: "Building Construction Services",
         icon: "building",
         image: "/images/division_1_construction.png",
         name: "Conventional Office Building Construction",
@@ -104,6 +105,7 @@ export const contentEn: Content = {
       },
       {
         number: "02",
+        badge: "Metal Materials Distribution",
         icon: "layers",
         image: "/images/division_2_metal.png",
         name: "Wholesale of Metal Construction Materials",
@@ -124,6 +126,7 @@ export const contentEn: Content = {
       },
       {
         number: "03",
+        badge: "Electronic Spare Parts Supply",
         icon: "cpu",
         image: "/images/division_3_electronic.png",
         name: "Wholesale of Electronic Spare Parts",
