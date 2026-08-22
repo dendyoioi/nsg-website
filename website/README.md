@@ -1,36 +1,31 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Website Company Profile — PT Nattu Global Synergy
 
-## Getting Started
+Website produksi (one-page, bilingual ID/EN) dibangun dengan Next.js static export.
+Spec: `../docs/superpowers/specs/2026-08-22-nsg-website-design.md`
 
-First, run the development server:
+## Perintah
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run dev       # dev server di localhost:3000
+npm test          # tes integritas konten (vitest)
+npm run build     # build static export → folder out/
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Form kontak (Web3Forms)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Daftar gratis di https://web3forms.com dengan email perusahaan.
+2. Salin `.env.example` menjadi `.env.local`, isi `NEXT_PUBLIC_WEB3FORMS_KEY`.
+3. Setelah domain live, aktifkan *domain restriction* di dashboard Web3Forms.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Deploy ke Biznet Gio NEO
 
-## Learn More
+1. `npm run build`
+2. Upload seluruh isi `out/` ke `public_html` (File Manager / FTP).
+3. Verifikasi: `/`, `/en`, `sitemap.xml`, `robots.txt`, submit form.
 
-To learn more about Next.js, take a look at the following resources:
+## Update konten minor (maintenance)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Semua teks ada di `content/id.ts` & `content/en.ts` (harus lengkap keduanya — field hilang = error TypeScript).
+- Kontak/alamat/domain: `content/site.ts`.
+- Foto: ganti file di `public/images/` dengan nama yang sama.
+- Angka struktur konten (3 divisi × 10 item, 5 misi, 5 nilai, 8 keunggulan, 4 K3, 13 sektor) dijaga oleh tes `npm test` — ubah tes hanya jika dokumen sumber klien berubah.
