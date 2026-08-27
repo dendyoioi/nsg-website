@@ -1,9 +1,38 @@
-import { ArrowRight, Clock, Mail, MapPin } from "lucide-react";
+"use client";
+
+import { useState } from "react";
+import { ArrowRight, Check, Clock, Copy, ExternalLink, Mail, MapPin } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { site } from "@/content/site";
 import type { Content } from "@/content/types";
 
 export function Footer({ t }: { t: Content }) {
+  const [copied, setCopied] = useState(false);
+
+  const mailSubject = encodeURIComponent("Permintaan Informasi & Penawaran Proyek NSG");
+  const mailBody = encodeURIComponent("Halo Tim PT Nattu Global Synergy,\n\nSaya ingin berkonsultasi mengenai kebutuhan proyek/pengadaan kami:\n- Nama Perusahaan:\n- Kebutuhan (Konstruksi / Logam / Suku Cadang Elektronik):\n- Detail Proyek:\n\nTerima kasih.");
+  const mailtoUrl = `mailto:${site.email}?subject=${mailSubject}&body=${mailBody}`;
+  const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${site.email}&su=${mailSubject}&body=${mailBody}`;
+
+  const copyEmail = async (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    try {
+      await navigator.clipboard.writeText(site.email);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      // Fallback
+      const textarea = document.createElement("textarea");
+      textarea.value = site.email;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
+  };
+
   const links = [
     { href: `#${site.anchors.about}`, label: t.nav.about },
     { href: `#${site.anchors.divisions}`, label: t.nav.divisions },
@@ -33,13 +62,51 @@ export function Footer({ t }: { t: Content }) {
                 Hubungi tim kami untuk konsultasi konstruksi atau permintaan penawaran material & komponen.
               </p>
             </div>
-            <a
-              href={`mailto:${site.email}?subject=Permintaan%20Informasi%20%26%20Penawaran%20Proyek%20NSG`}
-              className="inline-flex shrink-0 items-center gap-2.5 rounded-full bg-gradient-to-r from-brand-400 to-brand-500 px-7 py-3.5 text-sm font-bold text-brand-950 shadow-lg shadow-brand-500/20 transition-all duration-200 hover:brightness-110 hover:shadow-xl"
-            >
-              <span>Kirim Email Penawaran</span>
-              <ArrowRight className="h-4 w-4" />
-            </a>
+
+            {/* Email Actions Wrapper */}
+            <div className="relative flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+              <a
+                href={mailtoUrl}
+                onClick={() => {
+                  window.location.href = mailtoUrl;
+                }}
+                className="inline-flex shrink-0 items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-brand-400 to-brand-500 px-7 py-3.5 text-sm font-bold text-brand-950 shadow-lg shadow-brand-500/20 transition-all duration-200 hover:brightness-110 hover:shadow-xl active:scale-95"
+              >
+                <Mail className="h-4 w-4" />
+                <span>Kirim Email Penawaran</span>
+                <ArrowRight className="h-4 w-4" />
+              </a>
+
+              <a
+                href={gmailUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Buka langsung di Gmail Web"
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-brand-400/30 bg-white/5 px-5 py-3.5 text-xs font-semibold text-brand-200 transition-all hover:bg-brand-500/10 hover:border-brand-400 hover:text-white"
+              >
+                <span>Buka via Gmail</span>
+                <ExternalLink className="h-3.5 w-3.5" />
+              </a>
+
+              <button
+                type="button"
+                onClick={copyEmail}
+                title="Salin alamat email"
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-3.5 text-xs font-medium text-slate-300 transition-all hover:bg-white/10 hover:text-white"
+              >
+                {copied ? (
+                  <>
+                    <Check className="h-3.5 w-3.5 text-emerald-400" />
+                    <span className="text-emerald-400 font-semibold">Tersalin!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3.5 w-3.5" />
+                    <span>Salin</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -101,12 +168,27 @@ export function Footer({ t }: { t: Content }) {
             </li>
             <li className="flex items-center gap-3">
               <Mail className="h-5 w-5 shrink-0 text-brand-400" />
-              <a
-                href={`mailto:${site.email}`}
-                className="text-xs sm:text-sm font-medium text-brand-300 transition-colors hover:underline hover:text-white"
-              >
-                {site.email}
-              </a>
+              <div className="flex items-center gap-2">
+                <a
+                  href={mailtoUrl}
+                  className="text-xs sm:text-sm font-medium text-brand-300 transition-colors hover:underline hover:text-white"
+                >
+                  {site.email}
+                </a>
+                <button
+                  type="button"
+                  onClick={copyEmail}
+                  title="Salin alamat email"
+                  className="rounded p-1 text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
+                  aria-label="Salin email"
+                >
+                  {copied ? (
+                    <Check className="h-3.5 w-3.5 text-emerald-400" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" />
+                  )}
+                </button>
+              </div>
             </li>
             <li className="flex items-center gap-3">
               <Clock className="h-5 w-5 shrink-0 text-brand-400" />
