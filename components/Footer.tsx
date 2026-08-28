@@ -12,6 +12,7 @@ export function Footer({ t }: { t: Content }) {
     { href: `#${site.anchors.about}`, label: t.nav.about },
     { href: `#${site.anchors.divisions}`, label: t.nav.divisions },
     { href: `#${site.anchors.advantages}`, label: t.nav.advantages },
+    { href: `/support`, label: "Support & Ticketing SLA" },
   ];
 
   return (
