@@ -26,6 +26,7 @@ jobs:
         run: npm run build
         env:
           NEXT_PUBLIC_WEB3FORMS_KEY: ${{ secrets.NEXT_PUBLIC_WEB3FORMS_KEY }}
+          NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL: ${{ secrets.NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL || 'https://script.google.com/macros/s/AKfycbxi8i0ir-RalqIeSi8VZ3EGLa5DMf9X6Kb_D8Sr5S3lXIzfrg9DTd1CBqFySVHQfO_B/exec' }}
 
       - name: Sync out folder to cPanel via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -35,6 +36,8 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftp
           port: 21
+          timeout: 60000
+          security: loose
           local-dir: ./out/
           server-dir: ./
           dangerous-clean-slate: false
