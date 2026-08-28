@@ -48,8 +48,6 @@ export default function SupportLayout({ children }: { children: React.ReactNode 
             <p>© {new Date().getFullYear()} PT Nattu Global Synergy — IT Maintenance & Support Services.</p>
             <div className="flex items-center gap-4 text-slate-400">
               <span>Email: info@nattuglobalsynergy.co.id</span>
-              <span>•</span>
-              <span>Emergency WA: 0812-8888-9999</span>
             </div>
           </div>
         </footer>
