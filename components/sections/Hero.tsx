@@ -58,7 +58,7 @@ export function Hero({ t }: { t: Content }) {
               <ArrowDown className="h-4 w-4" />
             </Button>
             <Button
-              href={`#${site.anchors.about}`}
+              href={`#${site.anchors.contact}`}
               variant="outline-light"
               className="px-8 py-3.5 text-base bg-brand-950/40 backdrop-blur-sm border-white/30 hover:bg-white/10"
             >

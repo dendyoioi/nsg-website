@@ -4,6 +4,7 @@ import { About } from "@/components/sections/About";
 import { Advantages } from "@/components/sections/Advantages";
 import { Divisions } from "@/components/sections/Divisions";
 import { Hero } from "@/components/sections/Hero";
+import { ScrollToTop } from "@/components/ui/ScrollToTop";
 import { getContent } from "@/content";
 import type { Locale } from "@/content/types";
 
@@ -19,6 +20,7 @@ export function HomePage({ locale }: { locale: Locale }) {
         <Advantages t={t} />
       </main>
       <Footer t={t} />
+      <ScrollToTop />
     </>
   );
 }

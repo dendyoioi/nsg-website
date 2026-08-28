@@ -1,4 +1,4 @@
-import { ArrowRight, Clock, Mail, MapPin } from "lucide-react";
+import { ArrowRight, Mail, MapPin } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { site } from "@/content/site";
 import type { Content } from "@/content/types";
@@ -83,14 +83,6 @@ export function Footer({ t }: { t: Content }) {
                 </a>
               </li>
             ))}
-            <li>
-              <a
-                href={`#${site.anchors.home}`}
-                className="transition-colors hover:text-brand-300"
-              >
-                Kembali ke Atas ↑
-              </a>
-            </li>
           </ul>
         </div>
 
@@ -116,12 +108,6 @@ export function Footer({ t }: { t: Content }) {
               >
                 {site.email}
               </a>
-            </li>
-            <li className="flex items-center gap-3">
-              <Clock className="h-5 w-5 shrink-0 text-brand-400" />
-              <span className="text-xs text-slate-400">
-                Senin – Jumat: 08.30 – 17.00 WIB
-              </span>
             </li>
           </ul>
         </div>
