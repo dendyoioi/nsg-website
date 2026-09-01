@@ -23,14 +23,9 @@ jobs:
         run: npm install
 
       - name: Build Next.js Static Export
-        run: |
-          if [ -z "$NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL" ]; then
-            export NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL="https://script.google.com/macros/s/AKfycbxi8i0ir-RalqIeSi8VZ3EGLa5DMf9X6Kb_D8Sr5S3lXIzfrg9DTd1CBqFySVHQfO_B/exec"
-          fi
-          npm run build
+        run: npm run build
         env:
-          NEXT_PUBLIC_WEB3FORMS_KEY: ${{ secrets.NEXT_PUBLIC_WEB3FORMS_KEY }}
-          NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL: ${{ secrets.NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL }}
+          NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL: https://script.google.com/macros/s/AKfycbzf0JlgPmUfO8T8xgul8CEivPFm8g8wdxlAM-SgigcxB--htcFN63wnafJTsLqSUa1F/exec
 
       - name: Sync out folder to cPanel via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
