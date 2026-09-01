@@ -13,6 +13,7 @@ Dokumen ini berisi panduan resmi bagi seluruh staf dan karyawan **PT Nattu Globa
 5. [Eskalasi ke Tim Teknis (Real Agent)](#5-eskalasi-ke-tim-teknis-real-agent)
 6. [Cara Menutup & Menyelesaikan Tiket](#6-cara-menutup--menyelesaikan-tiket)
 7. [Aturan Penutupan Tiket Otomatis (3 Jam Idle)](#7-aturan-penutupan-tiket-otomatis-3-jam-idle)
+8. [Lampiran: Daftar Akun Login & Kredensial Staf](#8-lampiran-daftar-akun-login--kredensial-staf)
 
 ---
 
@@ -21,8 +22,8 @@ Dokumen ini berisi panduan resmi bagi seluruh staf dan karyawan **PT Nattu Globa
 1. Buka browser Anda (Google Chrome / Safari / Edge).
 2. Kunjungi tautan: **`https://nattuglobalsynergy.co.id/support/login`** *(atau klik tombol **Support Portal** di bagian footer website)*.
 3. Masukkan data kredensial Anda:
-   - **Email Perusahaan:** Masukkan alamat email resmi Anda (contoh: `nama@nattuglobalsynergy.co.id`).
-   - **Password / PIN:** Masukkan 4-6 digit PIN yang telah dibagikan oleh tim IT/Admin.
+   - **Email Perusahaan:** Masukkan alamat email resmi Anda (contoh: `regi@nattuglobalsynergy.co.id`).
+   - **Password / PIN:** Masukkan 4-6 digit PIN resmi Anda (Default: `4321`).
 4. Klik tombol **`[ Masuk ke Akun ]`**.
 5. Setelah berhasil login, Anda akan langsung diarahkan ke halaman **Daftar Tiket Anda**.
 
@@ -74,7 +75,7 @@ Jika langkah mandiri pada panduan belum berhasil menyelesaikan kendala Anda:
 2. Klik tombol: **`[ ⚠️ Belum Paham / Minta Bantuan Tim Teknis (Real Agent) ]`**.
 3. Akan muncul dialog konfirmasi, klik **`[ Ya, Teruskan ke Tim Teknis ]`**.
 4. Status tiket akan otomatis berubah menjadi **`Sedang Dikerjakan Tim Teknis (In Progress)`**.
-5. Tim IT Support Nattu (**Dendy Aditya**) akan segera menerima notifikasi dan memberikan balasan manual di kolom diskusi atau menghubungi nomor WhatsApp Anda secara langsung.
+5. Tim IT Support Nattu (**Dendy Aditya**) akan segera menerima notifikasi dan memberikan balasan manual di kolom diskusi.
 
 ---
 
@@ -97,6 +98,22 @@ Untuk menjaga kebersihan antrean tiket dan memastikan status layanan selalu terb
 - **Perhitungan Waktu:** Jika sistem atau Tim Teknis telah memberikan balasan, dan **selama 3 jam tidak ada respon/balasan lanjutan dari Anda**, sistem akan menganggap kendala telah terselesaikan.
 - **Tindakan Sistem:** Sistem otomatis mengirimkan pesan penutupan resmi dan mengubah status tiket menjadi **`Closed`**.
 - **Jika Masih Membutuhkan Bantuan:** Anda dapat membuat tiket baru kapan saja melalui tombol **`[ Buat Tiket Baru ]`**.
+
+---
+
+## 8. Lampiran: Daftar Akun Login & Kredensial Staf
+
+Berikut adalah daftar akun pengguna resmi (*User Login Credentials*) yang terdaftar di database Google Spreadsheet untuk mengakses Portal Support PT Nattu Global Synergy:
+
+| User ID | Nama Pengguna | Alamat Email Resmi | Peran (Role) | Default PIN / Password |
+| :--- | :--- | :--- | :--- | :--- |
+| **USR-002** | Regi Nattu | `regi@nattuglobalsynergy.co.id` | Client / Staf | `4321` |
+| **USR-003** | Fajar | `fajar@nattuglobalsynergy.co.id` | Client / Staf | `4321` |
+| **USR-004** | Yoga | `yoga@nattuglobalsynergy.co.id` | Client / Staf | `4321` |
+
+> **⚠️ Catatan Keamanan Akun:**
+> - PIN/Password di atas divalidasi secara real-time ke database Google Spreadsheet perusahaan.
+> - Pastikan tidak membagikan PIN Anda kepada pihak luar yang tidak berkepentingan.
 
 ---
 
