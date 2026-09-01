@@ -1,0 +1,12 @@
+{
+  "python.analysis.exclude": [
+    "**/scratch/**",
+    "**/__pyrefly_virtual__/**",
+    "**/node_modules/**"
+  ],
+  "python.analysis.ignore": [
+    "**/scratch/**",
+    "**/__pyrefly_virtual__/**",
+    "**/node_modules/**"
+  ]
+}
