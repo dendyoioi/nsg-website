@@ -46,15 +46,15 @@ jobs:
           echo "HTTP Deployment Response: $RESPONSE"
           
           if [[ "$RESPONSE" == *"\"status\":\"success\""* ]]; then
-            echo "DEPLOY_SUCCESS=true" >> $GITHUB_ENV
+            echo "success=true" >> "$GITHUB_OUTPUT"
             echo "Deployment completed instantly via HTTPS!"
           else
-            echo "DEPLOY_SUCCESS=false" >> $GITHUB_ENV
+            echo "success=false" >> "$GITHUB_OUTPUT"
             echo "Receiver not ready yet, falling back to FTPS upload..."
           fi
 
       - name: Fallback FTPS Upload and Server Extraction
-        if: env.DEPLOY_SUCCESS != 'true'
+        if: steps.http_deploy.outputs.success != 'true'
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
