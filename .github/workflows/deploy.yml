@@ -30,9 +30,9 @@ jobs:
       - name: Prepare Tar Package
         run: |
           cd out
-          tar -cf ../deploy.tar .
+          tar -cf ../site.tar .
           cd ..
-          echo "Tar package created: deploy.tar ($(du -h deploy.tar | cut -f1))"
+          echo "Tar package created: site.tar ($(du -h site.tar | cut -f1))"
 
       - name: Install lftp
         run: sudo apt-get update && sudo apt-get install -y lftp
@@ -43,8 +43,8 @@ jobs:
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
-          echo "Uploading deploy.tar and extract.php via FTPS..."
-          lftp <<EOF
+          echo "Uploading site.tar and unpacker.php via FTPS..."
+          lftp -d <<EOF
           set ssl:verify-certificate no
           set ftp:ssl-allow yes
           set ftp:ssl-force yes
@@ -54,20 +54,20 @@ jobs:
           set net:timeout 30
           set net:max-retries 3
           open -u "$FTP_USERNAME","$FTP_PASSWORD" "$FTP_SERVER"
-          put -O ./ deploy.tar
-          put -O ./ extract.php
+          put -O ./ site.tar
+          put -O ./ unpacker.php
           quit
           EOF
           echo "Upload finished. Triggering instant server extraction..."
           
           # Trigger extraction via domain
-          HTTP_RES=$(curl -k -s -L "https://nattuglobalsynergy.co.id/extract.php?token=nsg_deploy_secret_2026" || true)
+          HTTP_RES=$(curl -k -s -L "https://nattuglobalsynergy.co.id/unpacker.php?token=nsg_deploy_secret_2026" || true)
           echo "Server Response: $HTTP_RES"
           
           if [[ "$HTTP_RES" == *"DEPLOY_SUCCESS"* ]]; then
             echo "Deployment fully completed!"
           else
             echo "Retrying via www..."
-            HTTP_RES_WWW=$(curl -k -s -L "https://www.nattuglobalsynergy.co.id/extract.php?token=nsg_deploy_secret_2026" || true)
+            HTTP_RES_WWW=$(curl -k -s -L "https://www.nattuglobalsynergy.co.id/unpacker.php?token=nsg_deploy_secret_2026" || true)
             echo "Server Response WWW: $HTTP_RES_WWW"
           fi
