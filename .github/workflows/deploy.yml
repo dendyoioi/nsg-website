@@ -46,20 +46,20 @@ jobs:
           echo "✅ lftp installed"
 
           echo "📤 Step 2/3: Uploading files via FTP..."
-          lftp -u "$FTP_USERNAME","$FTP_PASSWORD" "ftp://$FTP_SERVER" <<EOF
-            set ssl:verify-certificate false
-            set ftp:ssl-allow false
-            set net:timeout 30
-            set net:max-retries 3
-            set net:reconnect-interval-base 5
-            cd public_html || cd /
-            put site.tar.gz
-            put unpacker-gz.php
-            ls -la site.tar.gz unpacker-gz.php
-            echo "Upload complete"
-            bye
-          EOF
-
+          lftp -u "$FTP_USERNAME","$FTP_PASSWORD" "ftp://$FTP_SERVER" <<'FTPEOF'
+set ssl:verify-certificate false
+set ftp:ssl-allow false
+set net:timeout 30
+set net:max-retries 3
+set net:reconnect-interval-base 5
+set cmd:fail-exit false
+pwd
+put site.tar.gz
+put unpacker-gz.php
+ls -la site.tar.gz
+ls -la unpacker-gz.php
+bye
+FTPEOF
           echo "✅ FTP upload completed!"
 
           echo "🔧 Step 3/3: Triggering remote extraction..."
