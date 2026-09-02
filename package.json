@@ -7,7 +7,7 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run"
+    "test": "vitest run content/"
   },
   "dependencies": {
     "lucide-react": "^1.33.0",

@@ -6,7 +6,7 @@ export const site = {
   url: "https://www.nattuglobalsynergy.co.id",
   email: "info@nattuglobalsynergy.co.id",
   addressFull:
-    "Jl. Serdang Raya No. 12, Kel. Sumur Batu, Kec. Kemayoran, Kota Administrasi Jakarta Pusat, DKI Jakarta 10650",
+    "Jl. Serdang Raya No. 11, Kel. Sumur Batu, Kec. Kemayoran, Kota Administrasi Jakarta Pusat, DKI Jakarta 10650",
   addressShort: "Kemayoran, Jakarta Pusat 10650",
   phone: "", // TODO: isi nomor telepon resmi klien
   anchors: {
