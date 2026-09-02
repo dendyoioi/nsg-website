@@ -1,61 +1,104 @@
 const fs = require("fs");
 const https = require("https");
 
-async function deploy() {
-  console.log("🚀 Uploading site.tar.gz directly via secure HTTPS Receiver...");
-  const filePath = "site.tar.gz";
-  if (!fs.existsSync(filePath)) {
-    throw new Error(`Package not found at ${filePath}`);
-  }
+const MAX_RETRIES = 5;
+const RETRY_DELAY_MS = 3000;
 
-  const stats = fs.statSync(filePath);
-  const fileSizeMB = (stats.size / (1024 * 1024)).toFixed(2);
-  console.log(`📦 Package size: ${fileSizeMB} MB`);
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
-  const options = {
-    hostname: "nattuglobalsynergy.co.id",
-    port: 443,
-    path: "/deploy-receiver.php?token=nsg_secret_deploy_key_998124018247",
-    method: "POST",
-    headers: {
-      "Content-Type": "application/gzip",
-      "Content-Length": stats.size,
-    },
-    rejectUnauthorized: false,
-    timeout: 60000,
-  };
-
+function uploadAttempt(filePath, attemptNumber) {
   return new Promise((resolve, reject) => {
+    const stats = fs.statSync(filePath);
+    const options = {
+      hostname: "nattuglobalsynergy.co.id",
+      port: 443,
+      path: "/deploy-receiver.php?token=nsg_secret_deploy_key_998124018247",
+      method: "POST",
+      family: 4, // Force IPv4 to prevent IPv6 handshake drops on Indonesian hosting
+      headers: {
+        "Content-Type": "application/gzip",
+        "Content-Length": stats.size,
+        "User-Agent": "NSG-AutoDeploy/2.0",
+        "Host": "nattuglobalsynergy.co.id",
+      },
+      servername: "nattuglobalsynergy.co.id",
+      rejectUnauthorized: false,
+      timeout: 45000,
+      agent: new https.Agent({
+        keepAlive: false,
+        maxSockets: 1,
+        minVersion: "TLSv1.2",
+      }),
+    };
+
+    console.log(`📡 [Attempt ${attemptNumber}/${MAX_RETRIES}] Connecting to nattuglobalsynergy.co.id via TLS...`);
+
     const req = https.request(options, (res) => {
       let data = "";
       res.on("data", (chunk) => (data += chunk));
       res.on("end", () => {
-        console.log(`📡 Response [HTTP ${res.statusCode}]:`, data);
+        console.log(`📥 [Attempt ${attemptNumber}] Response HTTP ${res.statusCode}: ${data.trim()}`);
         if (res.statusCode >= 200 && res.statusCode < 300 && data.includes('"status":"success"')) {
-          console.log("✨ Automated Deployment Completed Successfully!");
           resolve(data);
         } else {
-          reject(new Error(`Deployment failed with status ${res.statusCode}: ${data}`));
+          reject(new Error(`Server returned HTTP ${res.statusCode}: ${data}`));
         }
       });
     });
 
-    req.on("error", (e) => {
-      console.error("❌ Request error:", e.message);
-      reject(e);
+    req.on("error", (err) => {
+      req.destroy();
+      reject(err);
     });
 
     req.on("timeout", () => {
       req.destroy();
-      reject(new Error("Request timed out"));
+      reject(new Error("Socket timeout reached after 45s"));
     });
 
     const fileStream = fs.createReadStream(filePath);
+    fileStream.on("error", (err) => {
+      req.destroy();
+      reject(err);
+    });
+
     fileStream.pipe(req);
   });
 }
 
-deploy().catch((err) => {
-  console.error("💥 Deployment encountered an error:", err.message);
+async function runDeploy() {
+  const filePath = "site.tar.gz";
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Deployment archive ${filePath} not found.`);
+  }
+
+  const stats = fs.statSync(filePath);
+  const sizeMB = (stats.size / (1024 * 1024)).toFixed(2);
+  console.log(`🚀 Starting Automated Deployment Pipeline (Package: ${sizeMB} MB)...`);
+
+  let lastError = null;
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const result = await uploadAttempt(filePath, attempt);
+      console.log("✨ Deployment Verified and Completed Successfully!");
+      process.exit(0);
+    } catch (err) {
+      lastError = err;
+      console.warn(`⚠️ Attempt ${attempt} failed: ${err.message}`);
+      if (attempt < MAX_RETRIES) {
+        console.log(`⏳ Waiting ${RETRY_DELAY_MS / 1000}s before next attempt...`);
+        await sleep(RETRY_DELAY_MS);
+      }
+    }
+  }
+
+  console.error("💥 All deployment attempts exhausted.");
+  throw lastError;
+}
+
+runDeploy().catch((err) => {
+  console.error("❌ Fatal Deployment Error:", err.message);
   process.exit(1);
 });
