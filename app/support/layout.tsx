@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { LogoMark } from '@/components/LogoMark';
+import { Logo } from '@/components/Logo';
 import { HtmlShell } from '@/components/HtmlShell';
 import { SupportNav } from '@/components/support/SupportNav';
 
@@ -17,13 +17,11 @@ export default function SupportLayout({ children }: { children: React.ReactNode 
         <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Link href="/support" className="flex items-center gap-2.5 group">
-                <div className="w-9 h-9 rounded-xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400 group-hover:border-teal-400 transition-colors">
-                  <LogoMark className="w-5 h-5 text-teal-400" />
-                </div>
-                <div>
+              <Link href="/support" className="flex items-center gap-3 group">
+                <Logo className="h-9 w-auto" />
+                <div className="border-l border-slate-700 pl-3">
                   <div className="font-bold text-white tracking-tight flex items-center gap-2">
-                    <span>Nattu Support</span>
+                    <span>Support Desk</span>
                     <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30">
                       Portal
                     </span>
