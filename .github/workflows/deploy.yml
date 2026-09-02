@@ -1,4 +1,4 @@
-name: Automated Deployment to Biznet Gio cPanel
+name: Build & Deploy to cPanel (Biznet Gio)
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 6
 
     steps:
       - name: Checkout Repository
@@ -21,52 +21,56 @@ jobs:
           node-version: 22
 
       - name: Install Dependencies
-        run: npm install
+        run: npm ci || npm install
 
       - name: Build Next.js Static Export
         run: npm run build
         env:
           NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL: https://script.google.com/macros/s/AKfycbzf0JlgPmUfO8T8xgul8CEivPFm8g8wdxlAM-SgigcxB--htcFN63wnafJTsLqSUa1F/exec
 
-      - name: Prepare Optimized Package
+      - name: Prepare Deploy Package
         run: |
           cp deploy-receiver.php out/deploy-receiver.php
+          cp deploy-check.html out/deploy-check.html 2>/dev/null || true
           tar -czf site.tar.gz -C out .
-          echo "Package prepared: site.tar.gz ($(du -h site.tar.gz | cut -f1))"
+          echo "📦 Package: site.tar.gz ($(du -h site.tar.gz | cut -f1))"
 
-      - name: Deploy to Server (Multi-Engine Resilience)
+      - name: Deploy via FTP + HTTP Trigger
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
-          echo "=== Step 1: Direct IPv4 HTTPS Streaming ==="
-          DEPLOY_SUCCESS=false
+          npm install basic-ftp
+          node scripts/deploy-ftp.js
 
-          # Attempt 1: Direct IPv4 Streaming with Expect: disabled
-          RESPONSE=$(curl --http1.1 -k -s -w "\nHTTP_STATUS:%{http_code}" -X POST -H "Expect:" -H "Content-Type: application/gzip" --resolve "nattuglobalsynergy.co.id:443:103.125.180.51" --data-binary @site.tar.gz "https://nattuglobalsynergy.co.id/deploy-receiver.php?token=nsg_secret_deploy_key_998124018247" || true)
-          echo "$RESPONSE"
+      - name: Verify Deployment
+        if: success()
+        run: |
+          echo "⏳ Waiting 5s for server to settle..."
+          sleep 5
+          echo "🔍 Verifying deployment..."
 
-          if echo "$RESPONSE" | grep -q '"status":"success"'; then
-            echo "✨ Primary HTTPS Deployment succeeded!"
-            DEPLOY_SUCCESS=true
+          # Check homepage
+          HTTP_CODE=$(curl -sk -o /dev/null -w "%{http_code}" --max-time 15 \
+            --resolve "nattuglobalsynergy.co.id:443:103.125.180.51" \
+            "https://nattuglobalsynergy.co.id/")
+          echo "Homepage: HTTP $HTTP_CODE"
+
+          # Check support portal
+          HTTP_CODE2=$(curl -sk -o /dev/null -w "%{http_code}" --max-time 15 \
+            --resolve "nattuglobalsynergy.co.id:443:103.125.180.51" \
+            "https://nattuglobalsynergy.co.id/support/")
+          echo "Support Portal: HTTP $HTTP_CODE2"
+
+          # Check deploy-check.html
+          HTTP_CODE3=$(curl -sk -o /dev/null -w "%{http_code}" --max-time 15 \
+            --resolve "nattuglobalsynergy.co.id:443:103.125.180.51" \
+            "https://nattuglobalsynergy.co.id/deploy-check.html")
+          echo "Deploy Validator: HTTP $HTTP_CODE3"
+
+          if [ "$HTTP_CODE" = "200" ] && [ "$HTTP_CODE2" = "200" ]; then
+            echo "🎉 Deployment verified successfully!"
+          else
+            echo "⚠️ Some pages returned non-200. Please check manually."
           fi
-
-          # Attempt 2: Node.js HTTPS Retry Engine Fallback
-          if [ "$DEPLOY_SUCCESS" = "false" ]; then
-            echo "⚠️ Trying Step 2: Node.js Multi-Retry HTTPS Engine..."
-            if node scripts/deploy-https.js; then
-              echo "✨ Node.js HTTPS Deployment succeeded!"
-              DEPLOY_SUCCESS=true
-            fi
-          fi
-
-          # Attempt 3: FTPS Fallback
-          if [ "$DEPLOY_SUCCESS" = "false" ]; then
-            echo "⚠️ Trying Step 3: FTPS Fallback..."
-            node scripts/deploy-ftp.js
-            curl -k -s -L "https://nattuglobalsynergy.co.id/unpacker.php?token=nsg_deploy_secret_2026"
-            DEPLOY_SUCCESS=true
-          fi
-
-          echo "🚀 Deployment Routine Fully Completed!"
