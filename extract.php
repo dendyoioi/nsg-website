@@ -1,25 +1,24 @@
 <?php
-/**
- * Universal Zero-Dependency Tar Extractor for PT Nattu Global Synergy
- * Extracts deploy.tar directly into public_html and cleans up.
- */
-
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
 
 $token = $_GET['token'] ?? '';
 if ($token !== 'nsg_deploy_secret_2026') {
     http_response_code(403);
-    header('Content-Type: text/plain');
     echo "Forbidden: Invalid Token";
     exit;
 }
+
+header('Content-Type: text/plain');
+echo "=== NSG DEPLOY DIAGNOSTIC ===\n";
+echo "Current Dir: " . __DIR__ . "\n";
 
 function extractTarFile($tarPath, $destDir) {
     if (!file_exists($tarPath)) return false;
     $fp = fopen($tarPath, 'rb');
     if (!$fp) return false;
 
+    $count = 0;
     while (!feof($fp)) {
         $header = fread($fp, 512);
         if (strlen($header) < 512) break;
@@ -60,6 +59,7 @@ function extractTarFile($tarPath, $destDir) {
                 }
                 fclose($targetFp);
                 @chmod($target, 0644);
+                $count++;
             }
             $padding = (512 - ($filesize % 512)) % 512;
             if ($padding > 0) {
@@ -68,10 +68,9 @@ function extractTarFile($tarPath, $destDir) {
         }
     }
     fclose($fp);
-    return true;
+    return $count;
 }
 
-// Find deploy.tar
 $possiblePaths = [
     __DIR__ . '/deploy.tar',
     dirname(__DIR__) . '/deploy.tar',
@@ -83,22 +82,18 @@ $found = null;
 foreach ($possiblePaths as $p) {
     if (file_exists($p) && filesize($p) > 1000) {
         $found = $p;
+        echo "Found deploy.tar at: $p (Size: " . filesize($p) . " bytes)\n";
         break;
     }
 }
 
-if ($found && extractTarFile($found, __DIR__)) {
+if ($found) {
+    $extractedCount = extractTarFile($found, __DIR__);
+    echo "Extracted $extractedCount files successfully!\n";
     @unlink($found);
     @unlink(__DIR__ . '/deploy.tar');
-    @unlink(__DIR__ . '/deploy.zip');
-    @unlink(__DIR__ . '/extract.php');
-    @unlink(__DIR__ . '/deploy.php');
-    
-    header('Content-Type: text/plain');
-    echo "DEPLOY_SUCCESS: Unpacked from " . $found . " into " . __DIR__;
-    exit;
+    echo "DEPLOY_SUCCESS\n";
+} else {
+    echo "deploy.tar NOT found. Checked paths:\n" . implode("\n", $possiblePaths) . "\n";
+    echo "Files in " . __DIR__ . ":\n" . implode(", ", scandir(__DIR__)) . "\n";
 }
-
-http_response_code(500);
-header('Content-Type: text/plain');
-echo "Error: deploy.tar not found. Checked: " . implode(", ", $possiblePaths);
