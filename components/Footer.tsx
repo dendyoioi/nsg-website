@@ -56,7 +56,7 @@ export function Footer({ t }: { t: Content }) {
       <div className="mx-auto grid max-w-6xl gap-12 px-6 py-16 lg:grid-cols-[1.4fr_0.8fr_1.3fr]">
         {/* Brand Col */}
         <div>
-          <Logo className="h-12 w-32" />
+          <Logo className="h-11 w-auto" />
           <div className="mt-4 font-display text-base font-bold text-white">
             {site.name}
           </div>

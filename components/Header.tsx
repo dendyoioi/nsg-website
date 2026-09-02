@@ -40,7 +40,7 @@ export function Header({ locale, t }: { locale: Locale; t: Content }) {
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3.5">
         <Link href={`#${site.anchors.home}`} className="flex items-center gap-3">
-          <Logo className="h-10 w-28" />
+          <Logo className="h-10 w-auto" />
           <div className="hidden flex-col sm:flex">
             <span className="font-display text-sm font-bold tracking-tight text-white">
               {site.name}
