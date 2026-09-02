@@ -1,7 +1,7 @@
 <?php
 /**
  * Automated Deployment Receiver for PT Nattu Global Synergy
- * Receives deploy package via secure HTTPS POST and extracts it directly to public_html.
+ * Receives compressed deploy package via secure HTTPS POST and extracts it directly to public_html.
  */
 
 error_reporting(0);
@@ -36,7 +36,7 @@ $uploadedFile = $_FILES['package']['tmp_name'];
 if (!is_uploaded_file($uploadedFile) || filesize($uploadedFile) < 100) {
     http_response_code(400);
     header('Content-Type: application/json');
-    echo json_encode(['status' => 'error', 'message' => 'Invalid or empty upload package.']);
+    echo json_encode(['status' => 'error', 'message' => 'Upload failed or file exceeds server limits.']);
     exit;
 }
 
@@ -96,7 +96,23 @@ function extractTar($tarPath, $destDir) {
     return $count;
 }
 
-$extractedCount = extractTar($uploadedFile, $destDir);
+// Check if package is gzipped
+$content = file_get_contents($uploadedFile);
+$isGz = (substr($content, 0, 2) === "\x1f\x8b");
+
+if ($isGz) {
+    $decompressed = @gzdecode($content);
+    if ($decompressed !== false) {
+        $tempTar = sys_get_temp_dir() . '/nsg_deploy_' . time() . '.tar';
+        file_put_contents($tempTar, $decompressed);
+        $extractedCount = extractTar($tempTar, $destDir);
+        @unlink($tempTar);
+    } else {
+        $extractedCount = extractTar($uploadedFile, $destDir);
+    }
+} else {
+    $extractedCount = extractTar($uploadedFile, $destDir);
+}
 
 if ($extractedCount > 0) {
     header('Content-Type: application/json');

@@ -31,17 +31,17 @@ jobs:
       - name: Prepare Package
         run: |
           cd out
-          tar -cf ../site.tar .
+          tar -czf ../site.tar.gz .
           cd ..
-          echo "Package prepared: site.tar ($(du -h site.tar | cut -f1))"
+          echo "Package prepared: site.tar.gz ($(du -h site.tar.gz | cut -f1))"
 
       - name: Deploy via Secure HTTPS Webhook
         id: http_deploy
         continue-on-error: true
         run: |
           echo "Attempting high-speed HTTPS deployment..."
-          RESPONSE=$(curl -k -s -L -m 20 -X POST \
-            -F "package=@site.tar" \
+          RESPONSE=$(curl -k -s -L -m 30 -X POST \
+            -F "package=@site.tar.gz" \
             -F "token=nsg_secret_deploy_key_998124018247" \
             "https://nattuglobalsynergy.co.id/deploy-receiver.php" || true)
           echo "HTTP Deployment Response: $RESPONSE"
@@ -63,7 +63,7 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y lftp
           echo "Uploading package and receiver to cPanel with 15s timeout..."
-          lftp -e "set ssl:verify-certificate no; set ftp:ssl-allow yes; set ftp:ssl-force no; set ftp:passive-mode yes; set ftp:prefer-epsv no; set net:timeout 15; set net:max-retries 1; put site.tar; put deploy-receiver.php; put unpacker.php; quit" -u "$FTP_USERNAME","$FTP_PASSWORD" "$FTP_SERVER" || true
+          lftp -e "set ssl:verify-certificate no; set ftp:ssl-allow yes; set ftp:ssl-force no; set ftp:passive-mode yes; set ftp:prefer-epsv no; set net:timeout 15; set net:max-retries 1; put site.tar.gz; put deploy-receiver.php; put unpacker.php; quit" -u "$FTP_USERNAME","$FTP_PASSWORD" "$FTP_SERVER" || true
           
           echo "Triggering extraction..."
           curl -k -s -L -m 15 "https://nattuglobalsynergy.co.id/unpacker.php?token=nsg_deploy_secret_2026" || true
