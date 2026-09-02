@@ -46,27 +46,12 @@ jobs:
           echo "✅ lftp installed"
 
           echo "📤 Step 2/3: Uploading files via FTP..."
-          lftp -u "$FTP_USERNAME","$FTP_PASSWORD" "ftp://$FTP_SERVER" <<'FTPEOF'
-set ssl:verify-certificate false
-set ftp:ssl-allow false
-set net:timeout 30
-set net:max-retries 3
-set net:reconnect-interval-base 5
-set cmd:fail-exit false
-pwd
-put site.tar.gz
-put unpacker-gz.php
-ls -la site.tar.gz
-ls -la unpacker-gz.php
-bye
-FTPEOF
+          lftp -u "$FTP_USERNAME","$FTP_PASSWORD" "ftp://$FTP_SERVER" -e "set ssl:verify-certificate false; set ftp:ssl-allow false; set net:timeout 30; set net:max-retries 3; set net:reconnect-interval-base 5; set cmd:fail-exit false; pwd; put site.tar.gz; put unpacker-gz.php; ls -la site.tar.gz; ls -la unpacker-gz.php; bye"
           echo "✅ FTP upload completed!"
 
           echo "🔧 Step 3/3: Triggering remote extraction..."
           sleep 2
-          RESPONSE=$(curl -sk --max-time 120 \
-            --resolve "nattuglobalsynergy.co.id:443:103.125.180.51" \
-            "https://nattuglobalsynergy.co.id/unpacker-gz.php?token=nsg_deploy_secret_2026" || true)
+          RESPONSE=$(curl -sk --max-time 120 --resolve "nattuglobalsynergy.co.id:443:103.125.180.51" "https://nattuglobalsynergy.co.id/unpacker-gz.php?token=nsg_deploy_secret_2026" || true)
           echo "📥 Unpacker response:"
           echo "$RESPONSE"
 
@@ -84,12 +69,8 @@ FTPEOF
           sleep 5
           echo "🔍 Verifying deployment..."
 
-          HTTP_HOME=$(curl -sk -o /dev/null -w "%{http_code}" --max-time 15 \
-            --resolve "nattuglobalsynergy.co.id:443:103.125.180.51" \
-            "https://nattuglobalsynergy.co.id/")
-          HTTP_SUPPORT=$(curl -sk -o /dev/null -w "%{http_code}" --max-time 15 \
-            --resolve "nattuglobalsynergy.co.id:443:103.125.180.51" \
-            "https://nattuglobalsynergy.co.id/support/")
+          HTTP_HOME=$(curl -sk -o /dev/null -w "%{http_code}" --max-time 15 --resolve "nattuglobalsynergy.co.id:443:103.125.180.51" "https://nattuglobalsynergy.co.id/")
+          HTTP_SUPPORT=$(curl -sk -o /dev/null -w "%{http_code}" --max-time 15 --resolve "nattuglobalsynergy.co.id:443:103.125.180.51" "https://nattuglobalsynergy.co.id/support/")
 
           echo "📊 Results:"
           echo "  Homepage:       HTTP $HTTP_HOME"
