@@ -43,7 +43,7 @@ jobs:
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
-          echo "Uploading deploy.tar and extract.php to cPanel..."
+          echo "Uploading deploy.tar and deploy.php to cPanel..."
           lftp <<EOF
           set ssl:verify-certificate no
           set ftp:ssl-allow no
@@ -52,23 +52,23 @@ jobs:
           set net:timeout 30
           set net:max-retries 3
           open -u "$FTP_USERNAME","$FTP_PASSWORD" "$FTP_SERVER"
-          put deploy.tar -o deploy.tar
-          put extract.php -o extract.php
-          cd public_html
-          put deploy.tar -o deploy.tar
-          put extract.php -o extract.php
+          put -f deploy.tar -o deploy.tar
+          put -f deploy.php -o deploy.php
+          cd public_html || cd ./
+          put -f deploy.tar -o deploy.tar
+          put -f deploy.php -o deploy.php
           quit
           EOF
           echo "Upload finished. Triggering instant server extraction..."
           
           # Trigger extraction via domain
-          HTTP_RES=$(curl -k -s -L "https://nattuglobalsynergy.co.id/extract.php?token=nsg_deploy_secret_2026" || true)
+          HTTP_RES=$(curl -k -s -L "https://nattuglobalsynergy.co.id/deploy.php?token=nsg_deploy_secret_2026" || true)
           echo "Server Response: $HTTP_RES"
           
           if [[ "$HTTP_RES" == *"DEPLOY_SUCCESS"* ]]; then
             echo "Deployment fully completed!"
           else
             echo "Retrying via www..."
-            HTTP_RES_WWW=$(curl -k -s -L "https://www.nattuglobalsynergy.co.id/extract.php?token=nsg_deploy_secret_2026" || true)
+            HTTP_RES_WWW=$(curl -k -s -L "https://www.nattuglobalsynergy.co.id/deploy.php?token=nsg_deploy_secret_2026" || true)
             echo "Server Response WWW: $HTTP_RES_WWW"
           fi
