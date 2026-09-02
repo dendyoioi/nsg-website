@@ -43,10 +43,12 @@ jobs:
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
-          echo "Uploading deploy.tar and deploy.php to cPanel..."
+          echo "Uploading deploy.tar and deploy.php via FTPS..."
           lftp <<EOF
           set ssl:verify-certificate no
-          set ftp:ssl-allow no
+          set ftp:ssl-allow yes
+          set ftp:ssl-force yes
+          set ftp:ssl-protect-data yes
           set ftp:passive-mode yes
           set ftp:prefer-epsv no
           set net:timeout 30
