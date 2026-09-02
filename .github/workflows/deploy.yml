@@ -30,6 +30,7 @@ jobs:
 
       - name: Prepare Package
         run: |
+          cp deploy-receiver.php out/deploy-receiver.php
           cd out
           tar -czf ../site.tar.gz .
           cd ..
@@ -41,9 +42,8 @@ jobs:
         run: |
           echo "Attempting high-speed HTTPS deployment..."
           RESPONSE=$(curl -k -s -L -m 30 -X POST \
-            -F "package=@site.tar.gz" \
-            -F "token=nsg_secret_deploy_key_998124018247" \
-            "https://nattuglobalsynergy.co.id/deploy-receiver.php" || true)
+            --data-binary "@site.tar.gz" \
+            "https://nattuglobalsynergy.co.id/deploy-receiver.php?token=nsg_secret_deploy_key_998124018247" || true)
           echo "HTTP Deployment Response: $RESPONSE"
           
           if [[ "$RESPONSE" == *"\"status\":\"success\""* ]]; then

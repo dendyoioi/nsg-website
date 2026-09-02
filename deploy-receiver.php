@@ -1,7 +1,7 @@
 <?php
 /**
  * Automated Deployment Receiver for PT Nattu Global Synergy
- * Receives compressed deploy package via secure HTTPS POST and extracts it directly to public_html.
+ * Streams and extracts deployment archives directly via HTTPS.
  */
 
 error_reporting(0);
@@ -25,22 +25,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_FILES['package'])) {
-    http_response_code(400);
-    header('Content-Type: application/json');
-    echo json_encode(['status' => 'error', 'message' => 'No deploy package uploaded.']);
-    exit;
+$rawInput = file_get_contents('php://input');
+if (!$rawInput && !empty($_FILES['package']['tmp_name'])) {
+    $rawInput = file_get_contents($_FILES['package']['tmp_name']);
 }
 
-$uploadedFile = $_FILES['package']['tmp_name'];
-if (!is_uploaded_file($uploadedFile) || filesize($uploadedFile) < 100) {
+if (!$rawInput || strlen($rawInput) < 100) {
     http_response_code(400);
     header('Content-Type: application/json');
-    echo json_encode(['status' => 'error', 'message' => 'Upload failed or file exceeds server limits.']);
+    echo json_encode(['status' => 'error', 'message' => 'No payload received or payload empty.']);
     exit;
 }
 
 $destDir = __DIR__;
+
+// If gzipped, decompress
+if (substr($rawInput, 0, 2) === "\x1f\x8b") {
+    $tarData = @gzdecode($rawInput);
+} else {
+    $tarData = $rawInput;
+}
+
+if (!$tarData) {
+    $tarData = $rawInput;
+}
+
+$tempTar = sys_get_temp_dir() . '/nsg_deploy_' . time() . '.tar';
+file_put_contents($tempTar, $tarData);
 
 function extractTar($tarPath, $destDir) {
     $fp = fopen($tarPath, 'rb');
@@ -96,23 +107,8 @@ function extractTar($tarPath, $destDir) {
     return $count;
 }
 
-// Check if package is gzipped
-$content = file_get_contents($uploadedFile);
-$isGz = (substr($content, 0, 2) === "\x1f\x8b");
-
-if ($isGz) {
-    $decompressed = @gzdecode($content);
-    if ($decompressed !== false) {
-        $tempTar = sys_get_temp_dir() . '/nsg_deploy_' . time() . '.tar';
-        file_put_contents($tempTar, $decompressed);
-        $extractedCount = extractTar($tempTar, $destDir);
-        @unlink($tempTar);
-    } else {
-        $extractedCount = extractTar($uploadedFile, $destDir);
-    }
-} else {
-    $extractedCount = extractTar($uploadedFile, $destDir);
-}
+$extractedCount = extractTar($tempTar, $destDir);
+@unlink($tempTar);
 
 if ($extractedCount > 0) {
     header('Content-Type: application/json');
