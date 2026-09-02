@@ -1,8 +1,11 @@
 const fs = require("fs");
 const https = require("https");
 
+const SERVER_IP = "103.125.180.51";
+const DOMAIN = "nattuglobalsynergy.co.id";
+const DEPLOY_SECRET = "nsg_secret_deploy_key_998124018247";
 const MAX_RETRIES = 5;
-const RETRY_DELAY_MS = 3000;
+const RETRY_DELAY_MS = 2500;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -12,28 +15,23 @@ function uploadAttempt(filePath, attemptNumber) {
   return new Promise((resolve, reject) => {
     const stats = fs.statSync(filePath);
     const options = {
-      hostname: "nattuglobalsynergy.co.id",
+      host: SERVER_IP,
       port: 443,
-      path: "/deploy-receiver.php?token=nsg_secret_deploy_key_998124018247",
+      path: `/deploy-receiver.php?token=${DEPLOY_SECRET}`,
       method: "POST",
-      family: 4, // Force IPv4 to prevent IPv6 handshake drops on Indonesian hosting
+      servername: DOMAIN,
       headers: {
+        "Host": DOMAIN,
         "Content-Type": "application/gzip",
         "Content-Length": stats.size,
         "User-Agent": "NSG-AutoDeploy/2.0",
-        "Host": "nattuglobalsynergy.co.id",
+        "Connection": "close",
       },
-      servername: "nattuglobalsynergy.co.id",
       rejectUnauthorized: false,
-      timeout: 45000,
-      agent: new https.Agent({
-        keepAlive: false,
-        maxSockets: 1,
-        minVersion: "TLSv1.2",
-      }),
+      timeout: 60000,
     };
 
-    console.log(`📡 [Attempt ${attemptNumber}/${MAX_RETRIES}] Connecting to nattuglobalsynergy.co.id via TLS...`);
+    console.log(`📡 [Attempt ${attemptNumber}/${MAX_RETRIES}] Connecting directly to IPv4 ${SERVER_IP}:443 (SNI: ${DOMAIN})...`);
 
     const req = https.request(options, (res) => {
       let data = "";
@@ -55,7 +53,7 @@ function uploadAttempt(filePath, attemptNumber) {
 
     req.on("timeout", () => {
       req.destroy();
-      reject(new Error("Socket timeout reached after 45s"));
+      reject(new Error("Socket timeout reached after 60s"));
     });
 
     const fileStream = fs.createReadStream(filePath);
@@ -76,7 +74,7 @@ async function runDeploy() {
 
   const stats = fs.statSync(filePath);
   const sizeMB = (stats.size / (1024 * 1024)).toFixed(2);
-  console.log(`🚀 Starting Automated Deployment Pipeline (Package: ${sizeMB} MB)...`);
+  console.log(`🚀 Starting Direct IPv4 Automated Deployment Pipeline (${sizeMB} MB)...`);
 
   let lastError = null;
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {

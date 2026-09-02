@@ -34,5 +34,14 @@ jobs:
           tar -czf site.tar.gz -C out .
           echo "Package prepared: site.tar.gz ($(du -h site.tar.gz | cut -f1))"
 
-      - name: Deploy via High-Speed HTTPS Receiver
-        run: node scripts/deploy-https.js
+      - name: Deploy via Direct IPv4 Receiver
+        run: |
+          echo "Deploying directly via IPv4 103.125.180.51 with SNI..."
+          RESPONSE=$(curl --http1.1 -k -s -w "\nHTTP_STATUS:%{http_code}" -X POST -H "Content-Type: application/gzip" --resolve "nattuglobalsynergy.co.id:443:103.125.180.51" --data-binary @site.tar.gz "https://nattuglobalsynergy.co.id/deploy-receiver.php?token=nsg_secret_deploy_key_998124018247")
+          echo "$RESPONSE"
+          if echo "$RESPONSE" | grep -q '"status":"success"'; then
+            echo "Direct HTTPS Deployment succeeded!"
+          else
+            echo "Running Node.js fallback..."
+            node scripts/deploy-https.js
+          fi
