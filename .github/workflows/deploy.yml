@@ -34,26 +34,5 @@ jobs:
           tar -czf site.tar.gz -C out .
           echo "Package prepared: site.tar.gz ($(du -h site.tar.gz | cut -f1))"
 
-      - name: Deploy via High-Speed HTTPS Receiver (Primary)
-        id: https_deploy
-        run: |
-          echo "Deploying directly via secure HTTPS Receiver..."
-          RESPONSE=$(curl -k -s -w "\nHTTP_STATUS:%{http_code}" -X POST -H "Content-Type: application/gzip" --data-binary @site.tar.gz "https://nattuglobalsynergy.co.id/deploy-receiver.php?token=nsg_secret_deploy_key_998124018247")
-          echo "$RESPONSE"
-          if echo "$RESPONSE" | grep -q '"status":"success"'; then
-            echo "HTTPS Deployment succeeded!"
-          else
-            echo "HTTPS Deployment did not confirm success, falling back to FTPS..."
-            exit 1
-          fi
-
-      - name: Fallback Deploy via FTPS
-        if: failure() && steps.https_deploy.outcome == 'failure'
-        env:
-          FTP_SERVER: ${{ secrets.FTP_SERVER }}
-          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-        run: |
-          echo "Running FTPS fallback..."
-          node scripts/deploy-ftp.js
-          curl -k -s -L "https://nattuglobalsynergy.co.id/unpacker.php?token=nsg_deploy_secret_2026"
+      - name: Deploy via High-Speed HTTPS Receiver
+        run: node scripts/deploy-https.js
