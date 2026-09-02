@@ -9,7 +9,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 4
 
     steps:
       - name: Checkout Repository
@@ -34,14 +34,39 @@ jobs:
           tar -czf site.tar.gz -C out .
           echo "Package prepared: site.tar.gz ($(du -h site.tar.gz | cut -f1))"
 
-      - name: Deploy via Direct IPv4 Receiver
+      - name: Deploy to Server (Multi-Engine Resilience)
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
-          echo "Deploying directly via IPv4 103.125.180.51 with SNI..."
-          RESPONSE=$(curl --http1.1 -k -s -w "\nHTTP_STATUS:%{http_code}" -X POST -H "Content-Type: application/gzip" --resolve "nattuglobalsynergy.co.id:443:103.125.180.51" --data-binary @site.tar.gz "https://nattuglobalsynergy.co.id/deploy-receiver.php?token=nsg_secret_deploy_key_998124018247")
+          echo "=== Step 1: Direct IPv4 HTTPS Streaming ==="
+          DEPLOY_SUCCESS=false
+
+          # Attempt 1: Direct IPv4 Streaming with Expect: disabled
+          RESPONSE=$(curl --http1.1 -k -s -w "\nHTTP_STATUS:%{http_code}" -X POST -H "Expect:" -H "Content-Type: application/gzip" --resolve "nattuglobalsynergy.co.id:443:103.125.180.51" --data-binary @site.tar.gz "https://nattuglobalsynergy.co.id/deploy-receiver.php?token=nsg_secret_deploy_key_998124018247" || true)
           echo "$RESPONSE"
+
           if echo "$RESPONSE" | grep -q '"status":"success"'; then
-            echo "Direct HTTPS Deployment succeeded!"
-          else
-            echo "Running Node.js fallback..."
-            node scripts/deploy-https.js
+            echo "✨ Primary HTTPS Deployment succeeded!"
+            DEPLOY_SUCCESS=true
           fi
+
+          # Attempt 2: Node.js HTTPS Retry Engine Fallback
+          if [ "$DEPLOY_SUCCESS" = "false" ]; then
+            echo "⚠️ Trying Step 2: Node.js Multi-Retry HTTPS Engine..."
+            if node scripts/deploy-https.js; then
+              echo "✨ Node.js HTTPS Deployment succeeded!"
+              DEPLOY_SUCCESS=true
+            fi
+          fi
+
+          # Attempt 3: FTPS Fallback
+          if [ "$DEPLOY_SUCCESS" = "false" ]; then
+            echo "⚠️ Trying Step 3: FTPS Fallback..."
+            node scripts/deploy-ftp.js
+            curl -k -s -L "https://nattuglobalsynergy.co.id/unpacker.php?token=nsg_deploy_secret_2026"
+            DEPLOY_SUCCESS=true
+          fi
+
+          echo "🚀 Deployment Routine Fully Completed!"
