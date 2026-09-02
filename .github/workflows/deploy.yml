@@ -39,12 +39,12 @@ jobs:
           echo "Connecting and syncing files to cPanel..."
           lftp <<EOF
           set ssl:verify-certificate no
-          set ftp:ssl-allow yes
+          set ftp:ssl-allow no
           set ftp:passive-mode yes
-          set net:timeout 30
-          set net:max-retries 3
+          set net:timeout 10
+          set net:max-retries 2
           open -u "$FTP_USERNAME","$FTP_PASSWORD" "$FTP_SERVER"
-          mirror -R --verbose=1 ./out/ ./
+          mirror -R --only-newer --verbose=1 ./out/ ./
           quit
           EOF
           echo "Deploy completed successfully!"
