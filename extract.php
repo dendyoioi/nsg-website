@@ -1,7 +1,7 @@
 <?php
 /**
- * Universal Zero-Dependency Tar & Zip Extractor for PT Nattu Global Synergy
- * Works on every PHP installation without requiring ZipArchive, shell_exec, or Phar.
+ * Universal Zero-Dependency Tar Extractor for PT Nattu Global Synergy
+ * Extracts deploy.tar directly into public_html and cleans up.
  */
 
 error_reporting(E_ALL);
@@ -71,35 +71,34 @@ function extractTarFile($tarPath, $destDir) {
     return true;
 }
 
-$tarPath = __DIR__ . '/deploy.tar';
-$zipPath = __DIR__ . '/deploy.zip';
-$success = false;
-$method = "";
+// Find deploy.tar in current dir or parent dir
+$possiblePaths = [
+    __DIR__ . '/deploy.tar',
+    dirname(__DIR__) . '/deploy.tar',
+    __DIR__ . '/public_html/deploy.tar',
+    '/home/nattuglo/deploy.tar',
+    '/home/nattuglo/public_html/deploy.tar'
+];
 
-if (file_exists($tarPath)) {
-    if (extractTarFile($tarPath, __DIR__)) {
-        $success = true;
-        $method = "Pure PHP Tar Extractor";
+$tarPath = null;
+foreach ($possiblePaths as $p) {
+    if (file_exists($p)) {
+        $tarPath = $p;
+        break;
     }
 }
 
-if (!$success && file_exists($zipPath) && function_exists('exec')) {
-    @exec('unzip -o ' . escapeshellarg($zipPath) . ' -d ' . escapeshellarg(__DIR__) . ' 2>&1', $out, $ret);
-    if ($ret === 0) {
-        $success = true;
-        $method = "System Unzip";
-    }
-}
-
-if ($success) {
+if ($tarPath && extractTarFile($tarPath, __DIR__)) {
     @unlink($tarPath);
-    @unlink($zipPath);
     @unlink(__FILE__);
+    @unlink(__DIR__ . '/deploy.zip');
+    @unlink(dirname(__DIR__) . '/deploy.zip');
     
     header('Content-Type: text/plain');
-    echo "DEPLOY_SUCCESS: Extracted via " . $method;
-} else {
-    http_response_code(500);
-    header('Content-Type: text/plain');
-    echo "Error: Extraction failed. deploy.tar not found or not readable in " . __DIR__;
+    echo "DEPLOY_SUCCESS: Extracted pure tar from " . $tarPath . " into " . __DIR__;
+    exit;
 }
+
+http_response_code(500);
+header('Content-Type: text/plain');
+echo "Error: deploy.tar not found in searched paths: " . implode(", ", $possiblePaths);
