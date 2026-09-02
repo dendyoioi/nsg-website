@@ -40,9 +40,7 @@ jobs:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-        run: |
-          npm install basic-ftp
-          node scripts/deploy-ftp.js
+        run: node scripts/deploy-ftp.js
 
       - name: Verify Deployment
         if: success()
