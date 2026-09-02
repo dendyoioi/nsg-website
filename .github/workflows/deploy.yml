@@ -27,47 +27,44 @@ jobs:
         env:
           NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL: https://script.google.com/macros/s/AKfycbzf0JlgPmUfO8T8xgul8CEivPFm8g8wdxlAM-SgigcxB--htcFN63wnafJTsLqSUa1F/exec
 
-      - name: Prepare Tar Package
+      - name: Prepare Package
         run: |
           cd out
           tar -cf ../site.tar .
           cd ..
-          echo "Tar package created: site.tar ($(du -h site.tar | cut -f1))"
+          echo "Package prepared: site.tar ($(du -h site.tar | cut -f1))"
 
-      - name: Install lftp
-        run: sudo apt-get update && sudo apt-get install -y lftp
+      - name: Deploy via Secure HTTPS Webhook
+        id: http_deploy
+        continue-on-error: true
+        run: |
+          echo "Attempting high-speed HTTPS deployment..."
+          RESPONSE=$(curl -k -s -L -X POST \
+            -F "package=@site.tar" \
+            -F "token=nsg_secret_deploy_key_998124018247" \
+            "https://nattuglobalsynergy.co.id/deploy-receiver.php" || true)
+          echo "HTTP Deployment Response: $RESPONSE"
+          
+          if [[ "$RESPONSE" == *"\"status\":\"success\""* ]]; then
+            echo "DEPLOY_SUCCESS=true" >> $GITHUB_ENV
+            echo "Deployment completed instantly via HTTPS!"
+          else
+            echo "DEPLOY_SUCCESS=false" >> $GITHUB_ENV
+            echo "Receiver not ready yet, falling back to FTPS upload..."
+          fi
 
-      - name: Upload and Extract on cPanel (Fast & 100% Reliable)
+      - name: Fallback FTPS Upload and Server Extraction
+        if: env.DEPLOY_SUCCESS != 'true'
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
-          echo "Uploading site.tar and unpacker.php via FTPS..."
-          lftp -d <<EOF
-          set ssl:verify-certificate no
-          set ftp:ssl-allow yes
-          set ftp:ssl-force yes
-          set ftp:ssl-protect-data yes
-          set ftp:passive-mode yes
-          set ftp:prefer-epsv no
-          set net:timeout 30
-          set net:max-retries 3
-          open -u "$FTP_USERNAME","$FTP_PASSWORD" "$FTP_SERVER"
-          put -O ./ site.tar
-          put -O ./ unpacker.php
-          quit
-          EOF
-          echo "Upload finished. Triggering instant server extraction..."
+          sudo apt-get update && sudo apt-get install -y lftp
+          echo "Uploading package and receiver to cPanel..."
+          lftp -e "set ssl:verify-certificate no; set ftp:ssl-allow yes; set ftp:ssl-force yes; set ftp:ssl-protect-data yes; set ftp:passive-mode yes; set ftp:prefer-epsv no; set net:timeout 30; put site.tar; put deploy-receiver.php; put unpacker.php; quit" -u "$FTP_USERNAME","$FTP_PASSWORD" "$FTP_SERVER"
           
-          # Trigger extraction via domain
-          HTTP_RES=$(curl -k -s -L "https://nattuglobalsynergy.co.id/unpacker.php?token=nsg_deploy_secret_2026" || true)
-          echo "Server Response: $HTTP_RES"
+          echo "Triggering extraction..."
+          curl -k -s -L "https://nattuglobalsynergy.co.id/unpacker.php?token=nsg_deploy_secret_2026" || true
           
-          if [[ "$HTTP_RES" == *"DEPLOY_SUCCESS"* ]]; then
-            echo "Deployment fully completed!"
-          else
-            echo "Retrying via www..."
-            HTTP_RES_WWW=$(curl -k -s -L "https://www.nattuglobalsynergy.co.id/unpacker.php?token=nsg_deploy_secret_2026" || true)
-            echo "Server Response WWW: $HTTP_RES_WWW"
-          fi
+          echo "Deployment routine finished!"
