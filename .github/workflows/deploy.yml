@@ -54,11 +54,8 @@ jobs:
           set net:timeout 30
           set net:max-retries 3
           open -u "$FTP_USERNAME","$FTP_PASSWORD" "$FTP_SERVER"
-          put -f deploy.tar -o deploy.tar
-          put -f deploy.php -o deploy.php
-          cd public_html || cd ./
-          put -f deploy.tar -o deploy.tar
-          put -f deploy.php -o deploy.php
+          put deploy.tar -o deploy.tar
+          put deploy.php -o deploy.php
           quit
           EOF
           echo "Upload finished. Triggering instant server extraction..."
