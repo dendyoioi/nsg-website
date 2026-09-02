@@ -8,12 +8,12 @@ export function Logo({
   variant?: "light" | "dark";
 }) {
   return (
-    <div className={`relative inline-flex items-center overflow-hidden rounded-lg ${className}`}>
+    <div className={`relative inline-flex items-center ${className}`}>
       <Image
-        src="/images/nsg-logo.jpg"
+        src="/images/nsg-logo.png"
         alt="PT Nattu Global Synergy"
-        width={140}
-        height={48}
+        width={160}
+        height={60}
         priority
         className={`h-full w-auto object-contain transition-opacity ${
           variant === "light" ? "brightness-105" : ""
