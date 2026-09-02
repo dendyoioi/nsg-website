@@ -31,43 +31,23 @@ jobs:
       - name: Prepare Deploy Package
         run: |
           cp deploy-receiver.php out/deploy-receiver.php
+          cp deploy-check.html out/deploy-check.html 2>/dev/null || true
           tar -czf site.tar.gz -C out .
           echo "📦 Package: site.tar.gz ($(du -h site.tar.gz | cut -f1))"
 
-      - name: Deploy via FTP (lftp) + HTTP Trigger
+      - name: Deploy via FTP + Remote Unpacker
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-        run: |
-          set -e
-          echo "📦 Step 1/3: Installing lftp..."
-          sudo apt-get update -qq && sudo apt-get install -y -qq lftp > /dev/null 2>&1
-          echo "✅ lftp installed"
-
-          echo "📤 Step 2/3: Uploading files via FTP..."
-          lftp -u "$FTP_USERNAME","$FTP_PASSWORD" "ftp://$FTP_SERVER" -e "set ssl:verify-certificate false; set ftp:ssl-allow false; set net:timeout 30; set net:max-retries 3; set net:reconnect-interval-base 5; set cmd:fail-exit false; pwd; put site.tar.gz; put unpacker-gz.php; ls -la site.tar.gz; ls -la unpacker-gz.php; bye"
-          echo "✅ FTP upload completed!"
-
-          echo "🔧 Step 3/3: Triggering remote extraction..."
-          sleep 2
-          RESPONSE=$(curl -sk --max-time 120 --resolve "nattuglobalsynergy.co.id:443:103.125.180.51" "https://nattuglobalsynergy.co.id/unpacker-gz.php?token=nsg_deploy_secret_2026" || true)
-          echo "📥 Unpacker response:"
-          echo "$RESPONSE"
-
-          if echo "$RESPONSE" | grep -q "DEPLOY_SUCCESS"; then
-            echo "🎉 Deployment completed successfully!"
-          else
-            echo "⚠️ Unpacker may not have fully succeeded. Trying Node.js fallback..."
-            node scripts/deploy-ftp.js || true
-          fi
+        run: bash scripts/deploy.sh
 
       - name: Verify Deployment
         if: always()
         run: |
           echo "⏳ Waiting 5s for server to settle..."
           sleep 5
-          echo "🔍 Verifying deployment..."
+          echo "🔍 Verifying live site deployment..."
 
           HTTP_HOME=$(curl -sk -o /dev/null -w "%{http_code}" --max-time 15 --resolve "nattuglobalsynergy.co.id:443:103.125.180.51" "https://nattuglobalsynergy.co.id/")
           HTTP_SUPPORT=$(curl -sk -o /dev/null -w "%{http_code}" --max-time 15 --resolve "nattuglobalsynergy.co.id:443:103.125.180.51" "https://nattuglobalsynergy.co.id/support/")

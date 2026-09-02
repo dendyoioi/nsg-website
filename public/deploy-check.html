@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NSG Deploy Validation</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',sans-serif; background:#0f172a; color:#e2e8f0; min-height:100vh; padding:2rem; }
+  .container { max-width:700px; margin:0 auto; }
+  h1 { font-size:1.5rem; font-weight:700; margin-bottom:.5rem; background:linear-gradient(135deg,#38bdf8,#818cf8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .subtitle { color:#94a3b8; font-size:.875rem; margin-bottom:1.5rem; }
+  .card { background:#1e293b; border-radius:12px; padding:1.5rem; margin-bottom:1rem; border:1px solid #334155; }
+  .card h2 { font-size:1rem; font-weight:600; margin-bottom:1rem; color:#f1f5f9; }
+  .check-row { display:flex; align-items:center; gap:.75rem; padding:.625rem 0; border-bottom:1px solid #334155; }
+  .check-row:last-child { border-bottom:none; }
+  .status-icon { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.875rem; flex-shrink:0; }
+  .status-icon.pass { background:#065f46; color:#34d399; }
+  .status-icon.fail { background:#7f1d1d; color:#f87171; }
+  .status-icon.loading { background:#1e3a5f; color:#60a5fa; animation:pulse 1.2s infinite; }
+  .status-icon.skip { background:#3f3f46; color:#a1a1aa; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .check-label { flex:1; font-size:.875rem; }
+  .check-label small { display:block; color:#64748b; font-size:.75rem; margin-top:2px; }
+  .check-time { font-size:.75rem; color:#64748b; font-variant-numeric:tabular-nums; }
+  .summary { display:flex; gap:1rem; margin-top:1.5rem; }
+  .summary-box { flex:1; padding:1rem; border-radius:10px; text-align:center; }
+  .summary-box.pass-bg { background:linear-gradient(135deg,#065f46,#064e3b); border:1px solid #10b981; }
+  .summary-box.fail-bg { background:linear-gradient(135deg,#7f1d1d,#6b1c1c); border:1px solid #ef4444; }
+  .summary-box .num { font-size:2rem; font-weight:700; }
+  .summary-box .lbl { font-size:.75rem; color:#94a3b8; text-transform:uppercase; letter-spacing:.05em; }
+  .btn { display:inline-flex; align-items:center; gap:.5rem; padding:.75rem 1.5rem; background:linear-gradient(135deg,#3b82f6,#6366f1); border:none; border-radius:8px; color:#fff; font-size:.875rem; font-weight:600; cursor:pointer; margin-top:1.5rem; transition:transform .15s,box-shadow .15s; }
+  .btn:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(99,102,241,.4); }
+  .btn:disabled { opacity:.5; cursor:not-allowed; transform:none; box-shadow:none; }
+  .timestamp { text-align:center; margin-top:1rem; font-size:.75rem; color:#475569; }
+  .all-pass { text-align:center; padding:2rem; }
+  .all-pass .emoji { font-size:3rem; margin-bottom:.5rem; }
+  .all-pass .msg { font-size:1.125rem; font-weight:600; color:#34d399; }
+  .all-pass .sub { color:#94a3b8; font-size:.875rem; margin-top:.25rem; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🚀 NSG Deployment Validator</h1>
+  <p class="subtitle">Automated check for nattuglobalsynergy.co.id</p>
+
+  <div class="card">
+    <h2>📄 Halaman Utama</h2>
+    <div id="pages-checks"></div>
+  </div>
+
+  <div class="card">
+    <h2>🎫 Portal Support</h2>
+    <div id="support-checks"></div>
+  </div>
+
+  <div class="card">
+    <h2>📦 Static Assets</h2>
+    <div id="assets-checks"></div>
+  </div>
+
+  <div id="summary-area"></div>
+  
+  <div style="text-align:center">
+    <button class="btn" id="runBtn" onclick="runAllChecks()">▶ Jalankan Validasi</button>
+  </div>
+  <div class="timestamp" id="ts"></div>
+</div>
+
+<script>
+const BASE = window.location.origin;
+
+const checks = [
+  // Pages
+  { group:'pages', label:'Homepage (/)', url:'/', expect:'html', keyword:'nattu' },
+  { group:'pages', label:'English Version (/en/)', url:'/en/', expect:'html', keyword:'nattu' },
+  { group:'pages', label:'Robots.txt', url:'/robots.txt', expect:'text', keyword:'Sitemap' },
+  { group:'pages', label:'Sitemap XML', url:'/sitemap.xml', expect:'text', keyword:'urlset' },
+  // Support
+  { group:'support', label:'Support Portal (/support/)', url:'/support/', expect:'html', keyword:'support' },
+  { group:'support', label:'Login Page (/support/login/)', url:'/support/login/', expect:'html', keyword:'login' },
+  { group:'support', label:'New Ticket (/support/new/)', url:'/support/new/', expect:'html', keyword:'ticket' },
+  // Assets
+  { group:'assets', label:'Favicon (icon.svg)', url:'/icon.svg', expect:'asset' },
+  { group:'assets', label:'NSG Logo', url:'/images/nsg-logo.png', expect:'asset' },
+  { group:'assets', label:'CSS Bundle (_next/)', url:'/_next/', expect:'html' },
+];
+
+function renderRow(check, status, timeMs) {
+  const iconMap = { pass:'✓', fail:'✗', loading:'⋯', pending:'·' };
+  const cls = status || 'loading';
+  return `<div class="check-row">
+    <div class="status-icon ${cls}">${iconMap[cls]||'·'}</div>
+    <div class="check-label">${check.label}<small>${check.url}</small></div>
+    <div class="check-time">${timeMs != null ? timeMs+'ms' : ''}</div>
+  </div>`;
+}
+
+function renderGroup(groupId, groupChecks, results) {
+  const el = document.getElementById(groupId + '-checks');
+  el.innerHTML = groupChecks.map(c => {
+    const r = results[c.url];
+    return renderRow(c, r?.status, r?.time);
+  }).join('');
+}
+
+async function testCheck(check) {
+  const start = performance.now();
+  try {
+    const resp = await fetch(check.url, { method:'GET', cache:'no-store', redirect:'follow' });
+    const time = Math.round(performance.now() - start);
+    
+    if (!resp.ok) return { status:'fail', time, detail:`HTTP ${resp.status}` };
+    
+    if (check.expect === 'asset') {
+      const ct = resp.headers.get('content-type') || '';
+      if (resp.status === 200) return { status:'pass', time };
+      return { status:'fail', time, detail:'Not found' };
+    }
+    
+    const text = await resp.text();
+    if (check.keyword && !text.toLowerCase().includes(check.keyword.toLowerCase())) {
+      return { status:'fail', time, detail:`Missing keyword: "${check.keyword}"` };
+    }
+    return { status:'pass', time };
+  } catch(e) {
+    const time = Math.round(performance.now() - start);
+    return { status:'fail', time, detail:e.message };
+  }
+}
+
+async function runAllChecks() {
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Memeriksa...';
+
+  const results = {};
+  const groups = { pages:[], support:[], assets:[] };
+  checks.forEach(c => groups[c.group].push(c));
+
+  // Show loading state
+  for (const [gid, gChecks] of Object.entries(groups)) {
+    gChecks.forEach(c => { results[c.url] = { status:'loading' }; });
+    renderGroup(gid, gChecks, results);
+  }
+
+  // Run checks sequentially for clarity
+  for (const check of checks) {
+    results[check.url] = await testCheck(check);
+    renderGroup(check.group, groups[check.group], results);
+  }
+
+  // Summary
+  const passed = Object.values(results).filter(r => r.status === 'pass').length;
+  const failed = Object.values(results).filter(r => r.status === 'fail').length;
+  const total = checks.length;
+  const allPass = failed === 0;
+
+  let summaryHtml = `<div class="summary">
+    <div class="summary-box pass-bg"><div class="num">${passed}</div><div class="lbl">Passed</div></div>
+    <div class="summary-box fail-bg"><div class="num">${failed}</div><div class="lbl">Failed</div></div>
+  </div>`;
+
+  if (allPass) {
+    summaryHtml += `<div class="all-pass">
+      <div class="emoji">🎉</div>
+      <div class="msg">Deployment Berhasil!</div>
+      <div class="sub">Semua ${total} pengecekan lolos. Website siap digunakan.</div>
+    </div>`;
+  }
+
+  document.getElementById('summary-area').innerHTML = summaryHtml;
+  document.getElementById('ts').textContent = 'Terakhir dijalankan: ' + new Date().toLocaleString('id-ID');
+
+  btn.disabled = false;
+  btn.textContent = '🔄 Jalankan Ulang';
+}
+
+// Auto-run on load
+window.addEventListener('load', () => setTimeout(runAllChecks, 500));
+</script>
+</body>
+</html>
