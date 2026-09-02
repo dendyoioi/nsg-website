@@ -27,24 +27,23 @@ jobs:
         env:
           NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL: https://script.google.com/macros/s/AKfycbzf0JlgPmUfO8T8xgul8CEivPFm8g8wdxlAM-SgigcxB--htcFN63wnafJTsLqSUa1F/exec
 
-      - name: Prepare Archive Packages
+      - name: Prepare Tar Package
         run: |
           cd out
-          zip -q -r ../deploy.zip .
-          tar -czf ../deploy.tar.gz .
+          tar -cf ../deploy.tar .
           cd ..
-          echo "Packages created: deploy.zip and deploy.tar.gz"
+          echo "Tar package created: deploy.tar ($(du -h deploy.tar | cut -f1))"
 
       - name: Install lftp
         run: sudo apt-get update && sudo apt-get install -y lftp
 
-      - name: Upload and Extract on cPanel (Lightning Fast)
+      - name: Upload and Extract on cPanel (Fast & 100% Reliable)
         env:
           FTP_SERVER: ${{ secrets.FTP_SERVER }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
-          echo "Uploading deploy archives and extract.php to cPanel..."
+          echo "Uploading deploy.tar and extract.php to cPanel..."
           lftp <<EOF
           set ssl:verify-certificate no
           set ftp:ssl-allow no
@@ -53,19 +52,18 @@ jobs:
           set net:timeout 30
           set net:max-retries 3
           open -u "$FTP_USERNAME","$FTP_PASSWORD" "$FTP_SERVER"
-          put -O ./ deploy.zip
-          put -O ./ deploy.tar.gz
+          put -O ./ deploy.tar
           put -O ./ extract.php
           quit
           EOF
-          echo "Files uploaded. Triggering instant server-side extraction..."
+          echo "Upload finished. Triggering instant server extraction..."
           
           # Trigger extraction via domain
           HTTP_RES=$(curl -k -s -L "https://nattuglobalsynergy.co.id/extract.php?token=nsg_deploy_secret_2026" || true)
           echo "Server Response: $HTTP_RES"
           
           if [[ "$HTTP_RES" == *"DEPLOY_SUCCESS"* ]]; then
-            echo "Deployment finished successfully!"
+            echo "Deployment fully completed!"
           else
             echo "Retrying via www..."
             HTTP_RES_WWW=$(curl -k -s -L "https://www.nattuglobalsynergy.co.id/extract.php?token=nsg_deploy_secret_2026" || true)
