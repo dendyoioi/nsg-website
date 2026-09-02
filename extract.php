@@ -71,34 +71,34 @@ function extractTarFile($tarPath, $destDir) {
     return true;
 }
 
-// Find deploy.tar in current dir or parent dir
+// Find deploy.tar
 $possiblePaths = [
     __DIR__ . '/deploy.tar',
     dirname(__DIR__) . '/deploy.tar',
-    __DIR__ . '/public_html/deploy.tar',
-    '/home/nattuglo/deploy.tar',
-    '/home/nattuglo/public_html/deploy.tar'
+    '/home/nattuglo/public_html/deploy.tar',
+    '/home/nattuglo/deploy.tar'
 ];
 
-$tarPath = null;
+$found = null;
 foreach ($possiblePaths as $p) {
-    if (file_exists($p)) {
-        $tarPath = $p;
+    if (file_exists($p) && filesize($p) > 1000) {
+        $found = $p;
         break;
     }
 }
 
-if ($tarPath && extractTarFile($tarPath, __DIR__)) {
-    @unlink($tarPath);
-    @unlink(__FILE__);
+if ($found && extractTarFile($found, __DIR__)) {
+    @unlink($found);
+    @unlink(__DIR__ . '/deploy.tar');
     @unlink(__DIR__ . '/deploy.zip');
-    @unlink(dirname(__DIR__) . '/deploy.zip');
+    @unlink(__DIR__ . '/extract.php');
+    @unlink(__DIR__ . '/deploy.php');
     
     header('Content-Type: text/plain');
-    echo "DEPLOY_SUCCESS: Extracted pure tar from " . $tarPath . " into " . __DIR__;
+    echo "DEPLOY_SUCCESS: Unpacked from " . $found . " into " . __DIR__;
     exit;
 }
 
 http_response_code(500);
 header('Content-Type: text/plain');
-echo "Error: deploy.tar not found in searched paths: " . implode(", ", $possiblePaths);
+echo "Error: deploy.tar not found. Checked: " . implode(", ", $possiblePaths);
