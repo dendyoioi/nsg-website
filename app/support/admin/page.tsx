@@ -318,7 +318,7 @@ export default function SupportAdminPortal() {
 
         <div className="flex items-center gap-2">
           <button
-            onClick={loadTickets}
+            onClick={() => loadTickets()}
             title="Refresh Data"
             className="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 text-xs flex items-center gap-1.5 transition"
           >

@@ -28,7 +28,6 @@ import {
   updateTicketStatus, 
   fetchComments, 
   addComment, 
-  saveLocalComments,
   getLocalComments,
   ClientComment as TicketComment 
 } from '@/lib/support-storage';
@@ -180,13 +179,6 @@ export default function TicketDetailClient({ ticketId }: { ticketId: string }) {
       clearInterval(interval);
     };
   }, [ticket]);
-
-  const saveComments = (newComments: TicketComment[]) => {
-    setComments(newComments);
-    if (ticket) {
-      saveLocalComments(ticket.id, ticket.ticketNumber, newComments);
-    }
-  };
 
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
