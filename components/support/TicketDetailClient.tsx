@@ -23,15 +23,16 @@ import {
   XCircle
 } from 'lucide-react';
 import { Ticket, TicketStatus } from '@/lib/types/support';
-import { fetchTicketById, updateTicketStatus } from '@/lib/support-storage';
+import { 
+  fetchTicketById, 
+  updateTicketStatus, 
+  fetchComments, 
+  addComment, 
+  saveLocalComments,
+  getLocalComments,
+  ClientComment as TicketComment 
+} from '@/lib/support-storage';
 import { generateAICommentReply } from '@/lib/ai-support-engine';
-
-interface TicketComment {
-  sender: string;
-  time: string;
-  text: string;
-  isAI?: boolean;
-}
 
 const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 
@@ -54,16 +55,14 @@ export default function TicketDetailClient({ ticketId }: { ticketId: string }) {
       try {
         const found = await fetchTicketById(ticketId);
         if (found) {
-          // Load stored comments first to calculate latest response time
-          let loadedComments: TicketComment[] = [];
-          try {
-            const stored = localStorage.getItem(`nattu_comments_${found.id}`);
-            if (stored) {
-              loadedComments = JSON.parse(stored);
-            }
-          } catch {
-            // ignore
+          // 1. Instant local comments
+          const instant = getLocalComments(found.id, found.ticketNumber);
+          if (instant.length > 0) {
+            setComments(instant);
           }
+
+          // 2. Load stored & remote comments
+          let loadedComments = await fetchComments(found.id, found.ticketNumber);
 
           // Calculate 3-hour auto-close rule based on the LAST response from Admin / System
           if (found.status === 'open' || found.status === 'in_progress' || found.status === 'waiting_feedback') {
@@ -78,7 +77,8 @@ export default function TicketDetailClient({ ticketId }: { ticketId: string }) {
                 lastSenderIsClient = true;
               } else {
                 // Last response was from staff/system
-                const storedTime = localStorage.getItem(`nattu_last_staff_time_${found.id}`);
+                const storedTime = localStorage.getItem(`nattu_last_staff_time_${found.id}`) || 
+                  (found.ticketNumber ? localStorage.getItem(`nattu_last_staff_time_${found.ticketNumber}`) : null);
                 lastStaffResponseTime = storedTime ? parseInt(storedTime, 10) : new Date(found.updatedAt || found.createdAt).getTime();
               }
             }
@@ -100,8 +100,8 @@ export default function TicketDetailClient({ ticketId }: { ticketId: string }) {
                     text: '🔒 Tiket ini telah otomatis ditutup oleh sistem karena tidak ada respon lanjutan dalam waktu 3 jam setelah balasan terakhir diberikan. Terima kasih telah menghubungi Layanan Support PT Nattu Global Synergy.',
                     isAI: true
                   };
-                  loadedComments.push(autoCloseComment);
-                  localStorage.setItem(`nattu_comments_${found.id}`, JSON.stringify(loadedComments));
+                  await addComment(found.id, found.ticketNumber, autoCloseComment);
+                  loadedComments = await fetchComments(found.id, found.ticketNumber);
                 }
 
                 await updateTicketStatus(found.id, 'closed', found.adminNotes);
@@ -121,7 +121,8 @@ export default function TicketDetailClient({ ticketId }: { ticketId: string }) {
           setComments(loadedComments);
 
           // Check if previous confirmation is saved
-          const storedConfirm = localStorage.getItem(`nattu_confirm_${found.id}`);
+          const storedConfirm = localStorage.getItem(`nattu_confirm_${found.id}`) || 
+            (found.ticketNumber ? localStorage.getItem(`nattu_confirm_${found.ticketNumber}`) : null);
           if (storedConfirm === 'paham' || storedConfirm === 'eskalasi') {
             setUserConfirmedStatus(storedConfirm);
           } else if (found.status === 'resolved' || found.status === 'closed') {
@@ -141,18 +142,53 @@ export default function TicketDetailClient({ ticketId }: { ticketId: string }) {
     loadTicket();
   }, [ticketId]);
 
+  // Real-time synchronization listener for discussions
+  useEffect(() => {
+    if (!ticket) return;
+
+    const handleSync = () => {
+      // 1. Instant local read
+      const instant = getLocalComments(ticket.id, ticket.ticketNumber);
+      if (instant.length > 0) {
+        setComments(prev => {
+          if (prev.length !== instant.length || JSON.stringify(prev) !== JSON.stringify(instant)) {
+            return instant;
+          }
+          return prev;
+        });
+      }
+
+      // 2. Background sync
+      fetchComments(ticket.id, ticket.ticketNumber).then(newComments => {
+        setComments(prev => {
+          if (newComments.length > 0 && (prev.length !== newComments.length || JSON.stringify(prev) !== JSON.stringify(newComments))) {
+            return newComments;
+          }
+          return prev;
+        });
+      });
+    };
+
+    window.addEventListener('nattu_comments_updated', handleSync);
+    window.addEventListener('storage', handleSync);
+
+    const interval = setInterval(handleSync, 3000);
+
+    return () => {
+      window.removeEventListener('nattu_comments_updated', handleSync);
+      window.removeEventListener('storage', handleSync);
+      clearInterval(interval);
+    };
+  }, [ticket]);
+
   const saveComments = (newComments: TicketComment[]) => {
     setComments(newComments);
     if (ticket) {
-      try {
-        localStorage.setItem(`nattu_comments_${ticket.id}`, JSON.stringify(newComments));
-      } catch {
-        // ignore
-      }
+      saveLocalComments(ticket.id, ticket.ticketNumber, newComments);
     }
   };
 
-  const handleAddComment = (e: React.FormEvent) => {
+  const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!commentText.trim() || !ticket) return;
 
@@ -167,15 +203,16 @@ export default function TicketDetailClient({ ticketId }: { ticketId: string }) {
       isAI: false
     };
 
-    const updatedWithUser = [...comments, userComment];
-    saveComments(updatedWithUser);
     setCommentText('');
+    await addComment(ticket.id, ticket.ticketNumber, userComment);
+    const updatedWithUser = await fetchComments(ticket.id, ticket.ticketNumber);
+    setComments(updatedWithUser);
 
     // Check if ticket has already been escalated to Real Agent / Admin
     const isEscalatedToRealAgent = 
       userConfirmedStatus === 'eskalasi' || 
       ticket.status === 'in_progress' || 
-      comments.some(c => c.sender.includes('Admin') || c.sender.includes('Dendy') || c.text.includes('dialihkan ke Real Agent'));
+      updatedWithUser.some(c => c.sender.includes('Admin') || c.sender.includes('Dendy') || c.text.includes('dialihkan ke Real Agent'));
 
     // If escalated to Real Agent, TURN OFF Auto-Reply completely!
     if (isEscalatedToRealAgent) {
@@ -193,16 +230,23 @@ export default function TicketDetailClient({ ticketId }: { ticketId: string }) {
         isAI: true
       };
 
-      const finalComments = [...updatedWithUser, aiComment];
-      saveComments(finalComments);
+      await addComment(ticket.id, ticket.ticketNumber, aiComment);
+      const finalComments = await fetchComments(ticket.id, ticket.ticketNumber);
+      setComments(finalComments);
       setAiTyping(false);
 
       // Record timestamp of system reply for 3-hour auto close
       localStorage.setItem(`nattu_last_staff_time_${ticket.id}`, Date.now().toString());
+      if (ticket.ticketNumber) {
+        localStorage.setItem(`nattu_last_staff_time_${ticket.ticketNumber}`, Date.now().toString());
+      }
 
       if (aiReply.shouldEscalate) {
         setUserConfirmedStatus('eskalasi');
         localStorage.setItem(`nattu_confirm_${ticket.id}`, 'eskalasi');
+        if (ticket.ticketNumber) {
+          localStorage.setItem(`nattu_confirm_${ticket.ticketNumber}`, 'eskalasi');
+        }
         setTicket(prev => prev ? { ...prev, status: 'in_progress', adminNotes: 'Eskalasi otomatis: Klien meminta bantuan manual melalui diskusi.' } : null);
         await updateTicketStatus(ticket.id, 'in_progress', 'Eskalasi otomatis: Klien meminta bantuan manual melalui diskusi.');
       }
@@ -517,45 +561,50 @@ export default function TicketDetailClient({ ticketId }: { ticketId: string }) {
 
           {comments.length > 0 && (
             <div className="space-y-3">
-              {comments.map((c, i) => (
-                <div
-                  key={i}
-                  className={`p-4 rounded-xl border text-xs space-y-1.5 ${
-                    c.isAI
-                      ? 'bg-gradient-to-r from-teal-950/40 via-slate-900 to-slate-900 border-teal-500/30 shadow-md'
-                      : c.sender.includes('Admin') || c.sender.includes('Dendy')
-                      ? 'bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 border-emerald-500/40 shadow-md'
-                      : 'bg-slate-950 border-slate-800'
-                  }`}
-                >
-                  <div className="flex items-center justify-between text-slate-400">
-                    <div className="flex items-center gap-1.5">
-                      {c.isAI ? (
-                        <>
-                          <div className="p-1 rounded bg-teal-500/20 text-teal-300">
-                            <Bot className="w-3.5 h-3.5" />
-                          </div>
-                          <strong className="text-teal-300 font-bold">Nattu Auto-Reply Sistem</strong>
-                        </>
-                      ) : c.sender.includes('Admin') || c.sender.includes('Dendy') ? (
-                        <>
-                          <div className="p-1 rounded bg-emerald-500/20 text-emerald-300">
-                            <User className="w-3.5 h-3.5" />
-                          </div>
-                          <strong className="text-emerald-300 font-bold">{c.sender}</strong>
-                        </>
-                      ) : (
-                        <>
-                          <User className="w-3.5 h-3.5 text-slate-400" />
-                          <strong className="text-slate-200">{c.sender}</strong>
-                        </>
-                      )}
+              {comments.map((c, i) => {
+                const messageText = c.text || (c as unknown as Record<string, string>).message || (c as unknown as Record<string, string>).content || (c as unknown as Record<string, string>).comment || '';
+                if (!messageText.trim()) return null;
+
+                return (
+                  <div
+                    key={`${c.sender}-${c.time}-${i}`}
+                    className={`p-4 rounded-xl border text-xs space-y-1.5 ${
+                      c.isAI
+                        ? 'bg-gradient-to-r from-teal-950/40 via-slate-900 to-slate-900 border-teal-500/30 shadow-md'
+                        : c.sender.includes('Admin') || c.sender.includes('Dendy')
+                        ? 'bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 border-emerald-500/40 shadow-md'
+                        : 'bg-slate-950 border-slate-800'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between text-slate-400">
+                      <div className="flex items-center gap-1.5">
+                        {c.isAI ? (
+                          <>
+                            <div className="p-1 rounded bg-teal-500/20 text-teal-300">
+                              <Bot className="w-3.5 h-3.5" />
+                            </div>
+                            <strong className="text-teal-300 font-bold">Nattu Auto-Reply Sistem</strong>
+                          </>
+                        ) : c.sender.includes('Admin') || c.sender.includes('Dendy') ? (
+                          <>
+                            <div className="p-1 rounded bg-emerald-500/20 text-emerald-300">
+                              <User className="w-3.5 h-3.5" />
+                            </div>
+                            <strong className="text-emerald-300 font-bold">{c.sender}</strong>
+                          </>
+                        ) : (
+                          <>
+                            <User className="w-3.5 h-3.5 text-slate-400" />
+                            <strong className="text-slate-200">{c.sender || 'Klien'}</strong>
+                          </>
+                        )}
+                      </div>
+                      <span className="text-[11px] text-slate-500">{c.time}</span>
                     </div>
-                    <span className="text-[11px] text-slate-500">{c.time}</span>
+                    <p className="text-slate-200 leading-relaxed whitespace-pre-wrap pl-5">{messageText}</p>
                   </div>
-                  <p className="text-slate-200 leading-relaxed whitespace-pre-wrap pl-5">{c.text}</p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 

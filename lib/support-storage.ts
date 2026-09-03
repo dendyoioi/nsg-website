@@ -229,6 +229,207 @@ export async function verifyUserLogin(
   return { success: false, message: 'NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL belum dikonfigurasi.' };
 }
 
+export interface ClientComment {
+  sender: string;
+  time: string;
+  text: string;
+  isAI?: boolean;
+  createdAt?: string;
+  id?: string;
+}
+
+export function getLocalComments(ticketId: string, ticketNumber?: string): ClientComment[] {
+  if (typeof window === 'undefined') return [];
+
+  const targetKeys = new Set<string>();
+  if (ticketId) {
+    targetKeys.add(`nattu_comments_${ticketId}`);
+    targetKeys.add(`nattu_comments_${ticketId.toLowerCase()}`);
+    targetKeys.add(`nattu_comments_${ticketId.toUpperCase()}`);
+  }
+  if (ticketNumber) {
+    targetKeys.add(`nattu_comments_${ticketNumber}`);
+    targetKeys.add(`nattu_comments_${ticketNumber.toLowerCase()}`);
+    targetKeys.add(`nattu_comments_${ticketNumber.toUpperCase()}`);
+  }
+
+  // Also scan all localStorage keys starting with nattu_comments_
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith('nattu_comments_')) {
+        const lowerK = k.toLowerCase();
+        if (
+          (ticketId && lowerK.includes(ticketId.toLowerCase())) ||
+          (ticketNumber && lowerK.includes(ticketNumber.toLowerCase()))
+        ) {
+          targetKeys.add(k);
+        }
+      }
+    }
+  } catch {
+    // ignore
+  }
+
+  const combined: ClientComment[] = [];
+  targetKeys.forEach(k => {
+    try {
+      const stored = localStorage.getItem(k);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          for (const raw of parsed) {
+            if (!raw) continue;
+            const text = (raw.text || raw.message || raw.content || raw.comment || raw.body || '').toString().trim();
+            if (!text) continue; // Skip blank ghost comments
+
+            const item: ClientComment = {
+              sender: raw.sender || raw.senderName || raw.author || (raw.isAI ? 'Nattu Auto-Reply Sistem' : 'Klien'),
+              time: raw.time || (raw.createdAt ? new Date(raw.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })),
+              text: text,
+              isAI: Boolean(raw.isAI || raw.senderRole === 'ai'),
+              id: raw.id,
+              createdAt: raw.createdAt
+            };
+
+            const exists = combined.some(c => 
+              c.text.trim() === item.text.trim() && 
+              c.sender.trim() === item.sender.trim() &&
+              c.time.trim() === item.time.trim()
+            );
+            if (!exists) {
+              combined.push(item);
+            }
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
+  });
+
+  return combined;
+}
+
+export function saveLocalComments(ticketId: string, ticketNumber: string | undefined, comments: ClientComment[], notify: boolean = false) {
+  if (typeof window === 'undefined') return;
+  const keys = Array.from(new Set([
+    `nattu_comments_${ticketId}`,
+    ticketNumber ? `nattu_comments_${ticketNumber}` : null
+  ])).filter(Boolean) as string[];
+
+  const jsonStr = JSON.stringify(comments);
+  for (const k of keys) {
+    try {
+      localStorage.setItem(k, jsonStr);
+    } catch {
+      // ignore
+    }
+  }
+  
+  if (notify) {
+    window.dispatchEvent(new CustomEvent('nattu_comments_updated', {
+      detail: { ticketId, ticketNumber, count: comments.length }
+    }));
+  }
+}
+
+export async function fetchComments(ticketId: string, ticketNumber?: string): Promise<ClientComment[]> {
+  const localList = getLocalComments(ticketId, ticketNumber);
+
+  if (GOOGLE_APPS_SCRIPT_URL) {
+    try {
+      const queryId = encodeURIComponent(ticketId);
+      const queryNum = ticketNumber ? encodeURIComponent(ticketNumber) : '';
+      const url = `${GOOGLE_APPS_SCRIPT_URL}?action=GET_COMMENTS&ticketId=${queryId}&ticketNumber=${queryNum}`;
+      const res = await fetch(url, { method: 'GET', cache: 'no-store' });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.status === 'success' && Array.isArray(json.data) && json.data.length > 0) {
+          // CRITICAL: Filter out ticket objects that might be returned if GAS hasn't redeployed GET_COMMENTS
+          const validCommentRows = json.data.filter((item: Record<string, unknown>) => 
+            !item.Ticket_ID && !item.Ticket_Number && (Boolean(item.message) || Boolean(item.text) || Boolean(item.comment))
+          );
+
+          if (validCommentRows.length > 0) {
+            const remoteList: ClientComment[] = validCommentRows.map((item: Record<string, unknown>) => ({
+              id: (item.id as string) || `CMT-${Math.random()}`,
+              sender: (item.senderName as string) || (item.sender as string) || (item.senderRole === 'admin' ? 'Dendy Aditya (Admin)' : 'Klien'),
+              time: (item.time as string) || (item.createdAt ? new Date(item.createdAt as string).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })),
+              text: ((item.message as string) || (item.text as string) || '').toString().trim(),
+              isAI: item.isAI === true || item.senderRole === 'ai',
+              createdAt: (item.createdAt as string) || new Date().toISOString()
+            })).filter((c: ClientComment) => c.text.length > 0);
+
+            // Merge local and remote avoiding exact duplicates
+            const merged = [...remoteList];
+            for (const loc of localList) {
+              const exists = merged.some(rem => 
+                rem.text.trim() === loc.text.trim() && 
+                rem.sender.trim() === loc.sender.trim()
+              );
+              if (!exists && loc.text.trim().length > 0) {
+                merged.push(loc);
+              }
+            }
+
+            if (merged.length !== localList.length) {
+              saveLocalComments(ticketId, ticketNumber, merged, false);
+            }
+            return merged;
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  return localList;
+}
+
+export async function addComment(
+  ticketId: string, 
+  ticketNumber: string | undefined, 
+  comment: ClientComment
+): Promise<boolean> {
+  const current = getLocalComments(ticketId, ticketNumber);
+  const cleanText = (comment.text || '').trim();
+  if (!cleanText) return false;
+
+  const validComment: ClientComment = {
+    ...comment,
+    text: cleanText
+  };
+
+  const updated = [...current, validComment];
+  // Explicitly notify listeners when a new comment is added
+  saveLocalComments(ticketId, ticketNumber, updated, true);
+
+  if (GOOGLE_APPS_SCRIPT_URL) {
+    try {
+      fetch(GOOGLE_APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'ADD_COMMENT',
+          ticketId: ticketId,
+          ticketNumber: ticketNumber || ticketId,
+          senderName: validComment.sender,
+          sender: validComment.sender,
+          senderRole: validComment.isAI ? 'ai' : (validComment.sender.includes('Admin') || validComment.sender.includes('Dendy') ? 'admin' : 'client'),
+          message: validComment.text,
+          text: validComment.text
+        })
+      }).catch(e => console.warn('Background comment sync error:', e));
+    } catch {
+      // ignore
+    }
+  }
+
+  return true;
+}
+
 function mapGSheetToTicket(row: Record<string, unknown>): Ticket {
   return {
     id: (row.Ticket_ID as string) || `TICK-${Math.random().toString(36).substring(2, 6)}`,
@@ -259,3 +460,4 @@ function mapGSheetToTicket(row: Record<string, unknown>): Ticket {
     resolvedAt: (row.Resolved_At as string) || undefined
   };
 }
+

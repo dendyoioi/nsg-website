@@ -19,16 +19,16 @@ import {
   Bot
 } from 'lucide-react';
 import { Ticket, TicketStatus } from '@/lib/types/support';
-import { fetchTickets, updateTicketStatus } from '@/lib/support-storage';
+import { 
+  fetchTickets, 
+  updateTicketStatus, 
+  fetchComments, 
+  addComment, 
+  getLocalComments,
+  ClientComment as TicketComment 
+} from '@/lib/support-storage';
 
 const ADMIN_MASTER_PINS = ['123456', '2026', '1234'];
-
-interface TicketComment {
-  sender: string;
-  time: string;
-  text: string;
-  isAI?: boolean;
-}
 
 export default function SupportAdminPortal() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -46,14 +46,14 @@ export default function SupportAdminPortal() {
   const [adminNoteInput, setAdminNoteInput] = useState('');
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
-  // Admin Real-Time Reply State
-  const [adminReplyText, setAdminReplyText] = useState('');
+  // Discussion / Real Agent Reply State
   const [currentComments, setCurrentComments] = useState<TicketComment[]>([]);
+  const [adminReplyText, setAdminReplyText] = useState('');
 
-  // Check stored PIN on mount
+  // Check Local Auth
   useEffect(() => {
-    const auth = localStorage.getItem('nattu_admin_auth');
-    if (auth === 'true') {
+    const isAuth = localStorage.getItem('nattu_admin_auth');
+    if (isAuth === 'true') {
       setIsAuthenticated(true);
     }
   }, []);
@@ -93,22 +93,65 @@ export default function SupportAdminPortal() {
 
   const selectedTicket = tickets.find(t => t.id === selectedTicketId) || null;
 
-  // Load comments when selected ticket changes
+  // Load comments when selected ticket changes (Instant 0ms read + background sync)
   useEffect(() => {
     if (selectedTicket) {
       setAdminNoteInput(selectedTicket.adminNotes || '');
-      try {
-        const stored = localStorage.getItem(`nattu_comments_${selectedTicket.id}`);
-        if (stored) {
-          setCurrentComments(JSON.parse(stored));
-        } else {
-          setCurrentComments([]);
-        }
-      } catch {
-        setCurrentComments([]);
-      }
+      
+      // 1. Instant local read (same-browser scenarios)
+      const instant = getLocalComments(selectedTicket.id, selectedTicket.ticketNumber);
+      setCurrentComments(instant);
+
+      // 2. Background sync from Google Sheets (cross-browser/cross-device)
+      fetchComments(selectedTicket.id, selectedTicket.ticketNumber).then(newComments => {
+        setCurrentComments(prev => {
+          if (newComments.length > 0 && (prev.length !== newComments.length || JSON.stringify(prev) !== JSON.stringify(newComments))) {
+            return newComments;
+          }
+          return prev;
+        });
+      });
     }
   }, [selectedTicketId, selectedTicket]);
+
+  // Real-time synchronization for discussions (listener & periodic polling)
+  useEffect(() => {
+    if (!selectedTicket) return;
+
+    const handleSync = () => {
+      // 1. Check local immediately
+      const instant = getLocalComments(selectedTicket.id, selectedTicket.ticketNumber);
+      if (instant.length > 0) {
+        setCurrentComments(prev => {
+          if (prev.length !== instant.length || JSON.stringify(prev) !== JSON.stringify(instant)) {
+            return instant;
+          }
+          return prev;
+        });
+      }
+
+      // 2. Background fetch
+      fetchComments(selectedTicket.id, selectedTicket.ticketNumber).then(newComments => {
+        setCurrentComments(prev => {
+          if (newComments.length > 0 && (prev.length !== newComments.length || JSON.stringify(prev) !== JSON.stringify(newComments))) {
+            return newComments;
+          }
+          return prev;
+        });
+      });
+    };
+
+    window.addEventListener('nattu_comments_updated', handleSync);
+    window.addEventListener('storage', handleSync);
+
+    const interval = setInterval(handleSync, 3000);
+
+    return () => {
+      window.removeEventListener('nattu_comments_updated', handleSync);
+      window.removeEventListener('storage', handleSync);
+      clearInterval(interval);
+    };
+  }, [selectedTicket]);
 
   const handleCopyPrompt = () => {
     if (!selectedTicket?.aiLevel1Analysis?.antigravityPrompt) return;
@@ -147,17 +190,21 @@ export default function SupportAdminPortal() {
       isAI: false
     };
 
-    const updated = [...currentComments, newComment];
-    setCurrentComments(updated);
+    setAdminReplyText('');
+    await addComment(selectedTicket.id, selectedTicket.ticketNumber, newComment);
+    const refreshed = await fetchComments(selectedTicket.id, selectedTicket.ticketNumber);
+    setCurrentComments(refreshed);
+
     try {
-      localStorage.setItem(`nattu_comments_${selectedTicket.id}`, JSON.stringify(updated));
       localStorage.setItem(`nattu_last_staff_time_${selectedTicket.id}`, Date.now().toString());
       localStorage.setItem(`nattu_confirm_${selectedTicket.id}`, 'eskalasi');
+      if (selectedTicket.ticketNumber) {
+        localStorage.setItem(`nattu_last_staff_time_${selectedTicket.ticketNumber}`, Date.now().toString());
+        localStorage.setItem(`nattu_confirm_${selectedTicket.ticketNumber}`, 'eskalasi');
+      }
     } catch {
       // ignore
     }
-
-    setAdminReplyText('');
 
     // Update status to in_progress or resolved if not already
     if (selectedTicket.status === 'open') {
@@ -519,37 +566,42 @@ export default function SupportAdminPortal() {
                   <span className="text-[11px] text-slate-400">{currentComments.length} pesan</span>
                 </div>
 
-                {/* Comments List */}
+                  {/* Comments List */}
                 <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
                   {currentComments.length === 0 ? (
                     <div className="py-6 text-center text-xs text-slate-500">
                       Belum ada pesan diskusi dari klien untuk tiket ini.
                     </div>
                   ) : (
-                    currentComments.map((c, i) => (
-                      <div
-                        key={i}
-                        className={`p-3 rounded-xl text-xs space-y-1 ${
-                          c.isAI
-                            ? 'bg-teal-950/20 border border-teal-500/20 text-slate-300'
-                            : c.sender.includes('Dendy') || c.sender.includes('Admin')
-                            ? 'bg-emerald-950/30 border border-emerald-500/30 text-emerald-200'
-                            : 'bg-slate-900 border border-slate-800 text-slate-200'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between text-[11px] text-slate-400">
-                          <strong className={
-                            c.isAI ? 'text-teal-300' :
-                            c.sender.includes('Dendy') || c.sender.includes('Admin') ? 'text-emerald-400' :
-                            'text-slate-200'
-                          }>
-                            {c.sender}
-                          </strong>
-                          <span>{c.time}</span>
+                    currentComments.map((c, i) => {
+                      const messageText = c.text || (c as unknown as Record<string, string>).message || (c as unknown as Record<string, string>).content || (c as unknown as Record<string, string>).comment || '';
+                      if (!messageText.trim()) return null;
+
+                      return (
+                        <div
+                          key={`${c.sender}-${c.time}-${i}`}
+                          className={`p-3 rounded-xl text-xs space-y-1 ${
+                            c.isAI
+                              ? 'bg-teal-950/20 border border-teal-500/20 text-slate-300'
+                              : c.sender.includes('Dendy') || c.sender.includes('Admin')
+                              ? 'bg-emerald-950/30 border border-emerald-500/30 text-emerald-200'
+                              : 'bg-slate-900 border border-slate-800 text-slate-200'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between text-[11px] text-slate-400">
+                            <strong className={
+                              c.isAI ? 'text-teal-300' :
+                              c.sender.includes('Dendy') || c.sender.includes('Admin') ? 'text-emerald-400' :
+                              'text-slate-200'
+                            }>
+                              {c.sender || 'Klien'}
+                            </strong>
+                            <span>{c.time}</span>
+                          </div>
+                          <p className="leading-relaxed whitespace-pre-wrap">{messageText}</p>
                         </div>
-                        <p className="leading-relaxed whitespace-pre-wrap">{c.text}</p>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
 

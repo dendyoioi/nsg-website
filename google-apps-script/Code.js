@@ -250,7 +250,43 @@ function doGet(e) {
       return createJsonResponse({ status: "success", data: usersList });
     }
     
-    // 2. Action Get Tickets
+    // 2. Action Get Comments
+    if (action === "GET_COMMENTS") {
+      let sheetComments = ss.getSheetByName(SHEET_COMMENTS);
+      if (!sheetComments || sheetComments.getLastRow() <= 1) {
+        return createJsonResponse({ status: "success", count: 0, data: [] });
+      }
+
+      const targetId = (params.ticketId || params.id || "").toString().trim();
+      const targetNumber = (params.ticketNumber || "").toString().trim();
+
+      const data = sheetComments.getDataRange().getValues();
+      const rows = data.slice(1);
+
+      const comments = [];
+      rows.forEach(row => {
+        const rowTicketId = (row[1] || "").toString().trim();
+        if (!targetId || rowTicketId === targetId || rowTicketId === targetNumber) {
+          comments.push({
+            id: row[0] || "",
+            ticketId: row[1] || "",
+            createdAt: row[2] || "",
+            senderRole: row[3] || "client",
+            senderName: row[4] || "User",
+            sender: row[4] || "User",
+            text: row[5] || "",
+            message: row[5] || "",
+            time: row[2] ? new Date(row[2]).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : "",
+            isAI: (row[3] === 'ai' || (row[4] && row[4].toString().includes('AI'))),
+            attachmentUrl: row[6] || ""
+          });
+        }
+      });
+
+      return createJsonResponse({ status: "success", count: comments.length, data: comments });
+    }
+
+    // 3. Action Get Tickets
     const sheetTickets = ss.getSheetByName(SHEET_TICKETS);
     if (!sheetTickets || sheetTickets.getLastRow() <= 1) {
       return createJsonResponse({ status: "success", data: [] });
@@ -359,6 +395,51 @@ function doPost(e) {
         }
       }
       return createJsonResponse({ status: "error", message: "Tiket tidak ditemukan" });
+    }
+
+    if (action === "ADD_COMMENT") {
+      let sheetComments = ss.getSheetByName(SHEET_COMMENTS);
+      if (!sheetComments) {
+        sheetComments = ss.insertSheet(SHEET_COMMENTS);
+        sheetComments.appendRow(["Comment_ID", "Ticket_ID", "Created_At", "Sender_Role", "Sender_Name", "Message", "Attachment_URL"]);
+      }
+      
+      const commentId = "CMT-" + Utilities.getUuid().substring(0, 8).toUpperCase();
+      const ticketId = postData.ticketId || postData.ticketNumber || "";
+      const now = new Date().toISOString();
+      const senderRole = postData.senderRole || (postData.isAI ? "ai" : (postData.sender && (postData.sender.includes("Admin") || postData.sender.includes("Dendy")) ? "admin" : "client"));
+      const senderName = postData.senderName || postData.sender || "User";
+      const message = postData.message || postData.text || "";
+      const attachmentUrl = postData.attachmentUrl || "";
+      
+      sheetComments.appendRow([
+        commentId,
+        ticketId,
+        now,
+        senderRole,
+        senderName,
+        message,
+        attachmentUrl
+      ]);
+      
+      // Update Updated_At in Tickets sheet
+      const sheetTickets = ss.getSheetByName(SHEET_TICKETS);
+      if (sheetTickets && sheetTickets.getLastRow() > 1) {
+        const dataTickets = sheetTickets.getDataRange().getValues();
+        for (let i = 1; i < dataTickets.length; i++) {
+          if (dataTickets[i][0] === ticketId || dataTickets[i][1] === ticketId) {
+            sheetTickets.getRange(i + 1, 4).setValue(now);
+            break;
+          }
+        }
+      }
+      
+      return createJsonResponse({
+        status: "success",
+        message: "Komentar berhasil disimpan",
+        commentId: commentId,
+        createdAt: now
+      });
     }
     
     return createJsonResponse({ status: "error", message: "Action tidak dikenal" });
