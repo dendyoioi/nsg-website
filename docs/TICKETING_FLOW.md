@@ -1,5 +1,9 @@
 # Nattu Support Ticketing System — Flow & Architecture Reference
 
+> **STATUS**: 🟢 **STABLE BASELINE (v1.0.0)**  
+> **Terverifikasi**: 03 September 2026  
+> **Ruang Lingkup**: Multi-Profile Browser Sync, Real-time Real Agent Escalation, Cloud Sheets Persistence, Cross-Environment Continuity (Local & Live).
+
 ## 📋 Overview
 
 Sistem tiketing Nattu Support menggunakan arsitektur **static-export Next.js** dengan **Google Apps Script (GAS)** sebagai backend serverless dan **Google Sheets** sebagai database.
