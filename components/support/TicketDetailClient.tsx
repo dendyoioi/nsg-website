@@ -264,7 +264,9 @@ export default function TicketDetailClient({ ticketId }: { ticketId: string }) {
       time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
       text: '✅ Klien telah mengonfirmasi: Panduan integrasi Gmail sudah dipahami & berhasil diterapkan. Tiket diselesaikan.'
     };
-    saveComments([...comments, newComment]);
+    await addComment(ticket.id, ticket.ticketNumber, newComment);
+    const updated = await fetchComments(ticket.id, ticket.ticketNumber);
+    setComments(updated);
     setTicket(prev => prev ? { ...prev, status: 'resolved', adminNotes: 'Diselesaikan oleh klien setelah panduan AI Level 0 berhasil diterapkan.' } : null);
 
     // Sync to Google Spreadsheet backend
@@ -282,7 +284,9 @@ export default function TicketDetailClient({ ticketId }: { ticketId: string }) {
       time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
       text: '⚠️ Klien meminta bantuan manual: Panduan AI belum dipahami sepenuhnya. Tiket dialihkan ke Real Agent (Tim Teknis Nattu).'
     };
-    saveComments([...comments, newComment]);
+    await addComment(ticket.id, ticket.ticketNumber, newComment);
+    const updated = await fetchComments(ticket.id, ticket.ticketNumber);
+    setComments(updated);
     setTicket(prev => prev ? { ...prev, status: 'in_progress', adminNotes: 'Eskalasi Real Agent: Klien membutuhkan panduan langsung.' } : null);
 
     // Sync to Google Spreadsheet backend
@@ -300,7 +304,9 @@ export default function TicketDetailClient({ ticketId }: { ticketId: string }) {
       time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
       text: '🔒 Klien telah menutup tiket ini secara mandiri. Tiket selesai.'
     };
-    saveComments([...comments, newComment]);
+    await addComment(ticket.id, ticket.ticketNumber, newComment);
+    const updated = await fetchComments(ticket.id, ticket.ticketNumber);
+    setComments(updated);
     setTicket(prev => prev ? { ...prev, status: 'closed', adminNotes: 'Ditutup langsung oleh klien.' } : null);
 
     // Sync to Google Spreadsheet backend

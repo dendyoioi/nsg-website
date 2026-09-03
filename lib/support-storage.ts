@@ -1,7 +1,9 @@
 import { Ticket, TicketFormData } from './types/support';
 import { processTicketAI } from './ai-support-engine';
 
-const GOOGLE_APPS_SCRIPT_URL = process.env.NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL || '';
+const GOOGLE_APPS_SCRIPT_URL = 
+  process.env.NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL || 
+  'https://script.google.com/macros/s/AKfycbyiywcByOzbNMsgapT2wmGYlD_W9w5GVWFjAV0h9c9GnY2cF0XQwzuju2mnTLvLqRMp/exec';
 
 // In-memory fallback
 let localTickets: Ticket[] = [];
@@ -408,7 +410,7 @@ export async function addComment(
 
   if (GOOGLE_APPS_SCRIPT_URL) {
     try {
-      fetch(GOOGLE_APPS_SCRIPT_URL, {
+      const res = await fetch(GOOGLE_APPS_SCRIPT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
@@ -421,9 +423,12 @@ export async function addComment(
           message: validComment.text,
           text: validComment.text
         })
-      }).catch(e => console.warn('Background comment sync error:', e));
-    } catch {
-      // ignore
+      });
+      if (!res.ok) {
+        console.warn('GSheet API add comment returned status:', res.status);
+      }
+    } catch (err) {
+      console.warn('GSheet API add comment network error:', err);
     }
   }
 

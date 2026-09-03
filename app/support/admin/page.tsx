@@ -70,8 +70,8 @@ export default function SupportAdminPortal() {
     }
   };
 
-  const loadTickets = useCallback(async () => {
-    setLoading(true);
+  const loadTickets = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const data = await fetchTickets();
       setTickets(data);
@@ -81,13 +81,17 @@ export default function SupportAdminPortal() {
     } catch (err) {
       console.error('Failed to load tickets in admin:', err);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [selectedTicketId]);
 
   useEffect(() => {
     if (isAuthenticated) {
       loadTickets();
+      const ticketInterval = setInterval(() => {
+        loadTickets(true);
+      }, 5000);
+      return () => clearInterval(ticketInterval);
     }
   }, [isAuthenticated, loadTickets]);
 

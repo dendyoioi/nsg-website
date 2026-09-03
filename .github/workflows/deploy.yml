@@ -26,7 +26,7 @@ jobs:
       - name: Build Next.js Static Export
         run: npm run build
         env:
-          NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL: https://script.google.com/macros/s/AKfycbzf0JlgPmUfO8T8xgul8CEivPFm8g8wdxlAM-SgigcxB--htcFN63wnafJTsLqSUa1F/exec
+          NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL: https://script.google.com/macros/s/AKfycbyiywcByOzbNMsgapT2wmGYlD_W9w5GVWFjAV0h9c9GnY2cF0XQwzuju2mnTLvLqRMp/exec
 
       - name: Prepare Deploy Package
         run: |
