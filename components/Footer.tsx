@@ -119,7 +119,7 @@ export function Footer({ t }: { t: Content }) {
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-6 sm:flex-row">
           <div>{t.footer.copyright}</div>
           <div className="flex items-center gap-2 text-[11px] text-slate-400">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="inline-block h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse"></span>
             <span>Serdang, Kemayoran, Jakarta Pusat 10650</span>
           </div>
         </div>
